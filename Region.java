@@ -5,17 +5,17 @@ import java.util.HashSet;
 
 public class Region {
 	
-	private ArrayList<Edge> edges = new ArrayList<>();
+	private HashSet<Edge> edges = new HashSet<>();
 	private HashSet<Vertex> vertices = new HashSet<Vertex>();
 	private boolean covered;
 	private final boolean outer;
 	
 	public Region(ArrayList<Edge> e) {
-		edges = e;
+		edges.addAll(e);
 		boolean t = false;
 		for(Edge temp: edges) {
 			vertices.addAll(temp.getVertices());
-			if(temp.outer() == 1 || temp.outer() == 2) {
+			if(temp.getOuter() == 1 || temp.getOuter() == 2) {
 				t = true;
 			}
 		}
@@ -30,11 +30,11 @@ public class Region {
 		return outer;
 	}
 	
-	public ArrayList<Edge> getEdges(){
+	public HashSet<Edge> getEdges(){
 		return edges;
 	}
 	
-	public HashSet<Object> getVertices(){
+	public HashSet<Vertex> getVertices(){
 		return vertices;
 	}
 	

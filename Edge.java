@@ -1,12 +1,12 @@
 package mlc.components;
 
-import java.util.ArrayList;
+import java.util.HashSet;
 
 public class Edge {
 
-	private ArrayList<Vertex> vertices = new ArrayList<>();
-	private int weight, id;
-	private boolean selected, finalized;
+	private HashSet<Vertex> vertices = new HashSet<Vertex>();
+	private int weight, id, selected;
+	private boolean finalized;
 	private final int outer;
 	
 	public Edge(int w, int i, Vertex u, Vertex v) {
@@ -35,18 +35,23 @@ public class Edge {
 	}
 	
 	public void setSelected() {
-		selected = !(selected);
+		if(selected == 0) {
+			selected = 1;
+		}
+		else {
+			selected = 0;
+		}
 	}
 	
-	public boolean selected() {
+	public int getSelected() {
 		return selected;
 	}
 	
-	public boolean finalized() {
+	public boolean getFinalized() {
 		return finalized;
 	}
 	
-	public int outer() {
+	public int getOuter() {
 		return outer;
 	}
 	
@@ -54,7 +59,7 @@ public class Edge {
 		return weight;
 	}
 	
-	public ArrayList<Vertex> getVertices(){
+	public HashSet<Vertex> getVertices(){
 		return vertices;
 	}
 	
