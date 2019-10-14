@@ -14,7 +14,8 @@ public class Region {
 		edges.addAll(e);
 		boolean t = false;
 		for(Edge temp: edges) {
-			vertices.addAll(temp.getVertices());
+			vertices.add(temp.getVertices()[0]);
+			vertices.add(temp.getVertices()[1]);
 			if(temp.getOuter() == 1 || temp.getOuter() == 2) {
 				t = true;
 			}

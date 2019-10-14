@@ -4,15 +4,15 @@ import java.util.HashSet;
 
 public class Edge {
 
-	private HashSet<Vertex> vertices = new HashSet<Vertex>();
+	private Vertex[] vertices = new Vertex[2];
 	private int weight, id, selected;
 	private boolean finalized;
 	private final int outer;
 	
 	public Edge(int w, int i, Vertex u, Vertex v) {
 		
-		vertices.add(u);
-		vertices.add(v);
+		vertices[0] = u;
+		vertices[1] = v;
 		weight = w;
 		id = i;
 		if(u.outer() && v.outer()) {
@@ -59,7 +59,7 @@ public class Edge {
 		return weight;
 	}
 	
-	public HashSet<Vertex> getVertices(){
+	public Vertex[] getVertices(){
 		return vertices;
 	}
 	

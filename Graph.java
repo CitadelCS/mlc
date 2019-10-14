@@ -116,15 +116,17 @@ public class Graph{
 			adjacency[i] = new ArrayList<>();
 		}
 		//Initializes the edge adjacency list.
-	    for(int i = 0; i < edges.length-1; i++) {
+	    for(int i = 0; i < edges.length; i++) {
 	    	//System.out.println("i: "+ i);
-	    	for(int j = i + 1; j < edges.length; j++) {
+	    	for(int j = 0; j < edges.length; j++) {
 	    		//System.out.println("j: "+ j);
-	    		for(Vertex v: edges[0].getVertices()) {
-	    			if(edges[1].getVertices().contains(v)) {
-	    				System.out.println("i:j = " + i + ":" + j);
-	    				adjacency[i].add(edges[j]);
-	    			}
+	    		if(edges[i].getVertices()[0].equals(edges[j].getVertices()[0]) || (edges[i].getVertices()[0].equals(edges[j].getVertices()[1]))) {
+	    			adjacency[i].add(edges[j]);
+	    			System.out.println(i + ":" + j);
+	    		}
+	    		else if(edges[i].getVertices()[1].equals(edges[j].getVertices()[0]) || (edges[i].getVertices()[1].equals(edges[j].getVertices()[1]))) {
+	    			adjacency[i].add(edges[j]);
+	    			System.out.println(i + ":" + j);
 	    		}
 	    	}
 	    }
