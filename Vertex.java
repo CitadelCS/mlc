@@ -7,12 +7,11 @@ public class Vertex {
 	private ArrayList<Edge> edges =  new ArrayList<>();
 	private ArrayList<Region> regions = new ArrayList<>();
 	private boolean selected, root, leaf, finalized;
-	private int id;
-	private final boolean outer;
+	private final int id, depth;
 	
-	public Vertex(boolean o, int id) {
+	public Vertex(int d, int id) {
 		
-		outer = o;
+		depth = d;
 		root = false;
 		leaf = false;
 		finalized = false;
@@ -24,12 +23,16 @@ public class Vertex {
 		return id;
 	}
 	
+	public boolean getSelected() {
+		return selected;
+	}
+	
 	public void setSelected() {
 		selected = !selected;
 	}
 	
-	public boolean outer() {
-		return outer;
+	public int getDepth() {
+		return depth;
 	}
 	
 	public ArrayList<Edge> getEdges(){

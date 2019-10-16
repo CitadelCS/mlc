@@ -1,13 +1,11 @@
 package mlc.components;
 
-import java.util.HashSet;
-
 public class Edge {
 
 	private Vertex[] vertices = new Vertex[2];
 	private int weight, id, selected;
 	private boolean finalized;
-	private final int outer;
+	private final int depth;
 	
 	public Edge(int w, int i, Vertex u, Vertex v) {
 		
@@ -15,19 +13,27 @@ public class Edge {
 		vertices[1] = v;
 		weight = w;
 		id = i;
-		if(u.outer() && v.outer()) {
-			outer = 3;
-			//Both vertices are outer making e an outer edge.
+		if(u.getDepth() == 1 && v.getDepth() == 1) {
+			depth = 1;
+			//Both vertices are depth making e an depth edge.
 		}
-		else if(u.outer() || v.outer()) {
-			outer = 2;
-			//Vertices are both inner and outer making e an inner-outer edge.
+		else if(u.getDepth() == 2 || v.getDepth() == 2) {
+			depth = 2;
+			//Vertices are both inner and depth making e an inner-depth edge.
 		}
 		else {
-			outer = 1;
+			depth = 3;
 			//Both vertices are inner making e an inner edge.
 		}
 		
+	}
+	
+	public Edge copy() {
+		return new Edge(weight, id, vertices[0], vertices[1]);
+	}
+	
+	public String toString() {
+		return("ID:" + id + ", Weight: " + weight + ", Outer: " + depth + ", Selected: " + selected + ", Finalized: " + finalized);
 	}
 	
 	public int getID() {
@@ -37,9 +43,21 @@ public class Edge {
 	public void setSelected() {
 		if(selected == 0) {
 			selected = 1;
+			if(vertices[0].getSelected() == false) {
+				vertices[0].setSelected();
+			}
+			if(vertices[1].getSelected() == false) {
+				vertices[1].getSelected();
+			}
 		}
 		else {
 			selected = 0;
+			if(vertices[0].getSelected() == true) {
+				vertices[0].setSelected();
+			}
+			if(vertices[1].getSelected() == true) {
+				vertices[1].setSelected();
+			}
 		}
 	}
 	
@@ -51,8 +69,8 @@ public class Edge {
 		return finalized;
 	}
 	
-	public int getOuter() {
-		return outer;
+	public int getDepth() {
+		return depth;
 	}
 	
 	public int getWeight() {

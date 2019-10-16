@@ -7,6 +7,7 @@ public class TestAlgorithm {
 	public static void main(String[] args) throws Exception {
 		File source = new File(args[0]);
 		Algorithm a1 = new Algorithm(source);
+		a1.procedure1();
 	}
 	/*
 	 * Variables used in the Algorithm are listed below.

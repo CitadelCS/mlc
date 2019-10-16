@@ -5,7 +5,7 @@ import java.util.HashSet;
 
 public class Region {
 	
-	private HashSet<Edge> edges = new HashSet<>();
+	private ArrayList<Edge> edges = new ArrayList<>();
 	private HashSet<Vertex> vertices = new HashSet<Vertex>();
 	private boolean covered;
 	private final boolean outer;
@@ -16,7 +16,7 @@ public class Region {
 		for(Edge temp: edges) {
 			vertices.add(temp.getVertices()[0]);
 			vertices.add(temp.getVertices()[1]);
-			if(temp.getOuter() == 1 || temp.getOuter() == 2) {
+			if(temp.getDepth() == 3 || temp.getDepth() == 2) {
 				t = true;
 			}
 		}
@@ -27,11 +27,11 @@ public class Region {
 		covered = !(covered);
 	}
 	
-	public boolean outer() {
+	public boolean getOuter() {
 		return outer;
 	}
 	
-	public HashSet<Edge> getEdges(){
+	public ArrayList<Edge> getEdges(){
 		return edges;
 	}
 	

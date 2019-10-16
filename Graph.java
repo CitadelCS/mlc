@@ -74,7 +74,7 @@ public class Graph{
 	    	if(temp.matches("[^tT][^rR][^uU][^Ee]|[^fF][^Aa][^lL][^Ss][^eE]")) {
 	    		throw new Exception("There must be either true or false");
 	    	}
-	    	vertices[i] = new Vertex(Boolean.parseBoolean(temp), i);
+	    	vertices[i] = new Vertex(Integer.getInteger(temp), i);
 	    }
 	    System.out.println("Vertices have been successfully intialized.");
 	    //Checks to make sure the format has been followed correctly.
@@ -175,14 +175,14 @@ public class Graph{
 	//Sorts edges by selected status, then weight, then outer status. Since merge sort is used for objects, the sort will be stable.
 	public void sortEdges(Edge[] e) {
 		Arrays.sort(e, (e1, e2) -> (int) e2.getSelected() - (int)e1.getSelected());
-		Arrays.sort(e, (e1, e2) -> e1.getOuter()-e2.getOuter());
 		Arrays.sort(e, (e1, e2) -> e1.getWeight()-e2.getWeight());
+		Arrays.sort(e, (e1, e2) -> e2.getDepth()-e2.getDepth());
 	}
 	
 	public ArrayList<Edge> minimumIOEdges() {
 		ArrayList<Edge> min = new ArrayList<>();
 		for(Edge e: edges) {
-			if(e.getOuter() == 2) {
+			if(e.getDepth() == 2) {
 				min.add(e);
 			}
 		}
