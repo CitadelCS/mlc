@@ -62,8 +62,8 @@ public class Graph{
 		vertices = new Vertex[num];
 		
 		/*
-		 * Adds the vertices to the Vertex[] from the file. Reads for a 1 or 0 (true or false) to 
-		 * determine the vertex's incidence to outside region.
+		 * Adds the vertices to the Vertex[] from the file. Reads for a 1, 2, or 3 to determine the depth of the 
+		 * vertex, where 3 represents a depth >= 3.
 		 */
 		sc.nextLine();
 	    for(int i = 0; i < num; i++) {
@@ -71,10 +71,10 @@ public class Graph{
 	    	System.out.println(temp);
 	    	
 	    	//Throws an exception if either true or false are not used.
-	    	if(temp.matches("[^tT][^rR][^uU][^Ee]|[^fF][^Aa][^lL][^Ss][^eE]")) {
-	    		throw new Exception("There must be either true or false");
+	    	if(temp.matches("[^0-3]")) {
+	    		throw new Exception("The depth of the vertex can only be 1, 2, or 3.");
 	    	}
-	    	vertices[i] = new Vertex(Integer.getInteger(temp), i);
+	    	vertices[i] = new Vertex(Integer.parseInt(temp), i);
 	    }
 	    System.out.println("Vertices have been successfully intialized.");
 	    //Checks to make sure the format has been followed correctly.
@@ -91,7 +91,7 @@ public class Graph{
 	    
 	    /*
 	     * Adds the edges to the Edge[] from the file. Reads numbers separated by a comma with the 
-	     * first being the weight. These are the vertices, not by zero-index, in correspondence to the 
+	     * first being the weight. These are the vertices, by zero-index, in correspondence to the 
 	     * Vertex[] initialization.
 	     */
 	    for(int i = 0; i < num; i++) {
@@ -103,7 +103,7 @@ public class Graph{
 	    		throw new Exception("There must only be numbers separated by a comma for an edge input.");
 	    	}
 	    	input = temp.split(",", 0);
-	    	edges[i] = new Edge(Integer.parseInt(input[0]), i, vertices[Integer.parseInt(input[1])-1], vertices[Integer.parseInt(input[2])-1]);
+	    	edges[i] = new Edge(Integer.parseInt(input[0]), i, vertices[Integer.parseInt(input[1])], vertices[Integer.parseInt(input[2])]);
 	    }
 	    System.out.println("Edges have been initialized successfully.");
 		
@@ -146,7 +146,7 @@ public class Graph{
 	    
 	    /*
 	     * Adds the regions to the Region[] from the file. Reads the boolean for the conditional outer
-	     * followed by numbers separated by a comma. These are the edges, not by zero-index, in
+	     * followed by numbers separated by a comma. These are the edges, by zero-index, in
 	     * correspondence to the Edge[] initialization.
 	    */
 	    for(int i = 0; i < num; i++) {
@@ -162,7 +162,7 @@ public class Graph{
 	    	//Creates an ArrayList of edges that is passed as a parameter for a new Region.
 	    	ArrayList<Edge> e = new ArrayList<>();
 	    	for(int j = 0; j < input.length; j++) {
-	    		e.add(edges[Integer.parseInt(input[j])-1]);
+	    		e.add(edges[Integer.parseInt(input[j])]);
 	    	}
 	    	regions[i] = new Region(e);
 	    }
@@ -177,6 +177,9 @@ public class Graph{
 		Arrays.sort(e, (e1, e2) -> (int) e2.getSelected() - (int)e1.getSelected());
 		Arrays.sort(e, (e1, e2) -> e1.getWeight()-e2.getWeight());
 		Arrays.sort(e, (e1, e2) -> e2.getDepth()-e2.getDepth());
+		for(Edge temp: e) {
+			System.out.println(temp);
+		}
 	}
 	
 	public ArrayList<Edge> minimumIOEdges() {
