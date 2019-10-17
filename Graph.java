@@ -19,6 +19,11 @@ public class Graph{
 	private Edge[] edges;
 	private Region[] regions;
 	private ArrayList<Edge> minimumIOEdge;
+	
+    /*
+	 * The length matches the number of edges. Then a reference to the Edge object is kept
+	 * in the 2-D adjustable array.
+	 */
 	private ArrayList<Edge>[] adjacency;
 	
 	public Graph(File source) throws Exception{
@@ -27,7 +32,6 @@ public class Graph{
 		//run();
 	}
 	
-	@SuppressWarnings("unchecked")
 	public void initialize(File source) throws Exception {
 		String temp;
 		String[] input;
@@ -107,30 +111,6 @@ public class Graph{
 	    }
 	    System.out.println("Edges have been initialized successfully.");
 		
-	    /*
-		 * The length matches the number of edge. Then a reference to the Edge object is kept
-		 * in the 2-D adjustable array.
-		 */
-		adjacency = new ArrayList[edges.length];
-		for(int i = 0; i < edges.length; i++) {
-			adjacency[i] = new ArrayList<>();
-		}
-		//Initializes the edge adjacency list.
-	    for(int i = 0; i < edges.length; i++) {
-	    	//System.out.println("i: "+ i);
-	    	for(int j = 0; j < edges.length; j++) {
-	    		//System.out.println("j: "+ j);
-	    		if(edges[i].getVertices()[0].equals(edges[j].getVertices()[0]) || (edges[i].getVertices()[0].equals(edges[j].getVertices()[1]))) {
-	    			adjacency[i].add(edges[j]);
-	    			System.out.println(i + ":" + j);
-	    		}
-	    		else if(edges[i].getVertices()[1].equals(edges[j].getVertices()[0]) || (edges[i].getVertices()[1].equals(edges[j].getVertices()[1]))) {
-	    			adjacency[i].add(edges[j]);
-	    			System.out.println(i + ":" + j);
-	    		}
-	    	}
-	    }
-	    System.out.println("Adjacency list has been initialized successfully.");
 	    //Checks to make sure the format has been followed correctly.
 	    temp = sc.nextLine();
 	    System.out.println(temp);
@@ -166,20 +146,90 @@ public class Graph{
 	    	}
 	    	regions[i] = new Region(e);
 	    }
-	    //Sort the edges initialized along with compose a list of minimum inner-outer edges. The scanner is also closed.
-	    sortEdges(edges);
 	    minimumIOEdge = minimumIOEdges();
 	    sc.close();
 	    }
 	
 	//Sorts edges by selected status, then weight, then outer status. Since merge sort is used for objects, the sort will be stable.
+	public void sortEdges() {
+		Arrays.sort(edges, (e1, e2) -> (int) e2.getSelected() - (int)e1.getSelected());
+		Arrays.sort(edges, (e1, e2) -> e1.getWeight() - e2.getWeight());
+		Arrays.sort(edges, (e1, e2) -> e2.getDepth() - e1.getDepth());
+		for(Edge temp: edges) {
+			System.out.println(temp);
+		}
+	}
+	
 	public void sortEdges(Edge[] e) {
 		Arrays.sort(e, (e1, e2) -> (int) e2.getSelected() - (int)e1.getSelected());
-		Arrays.sort(e, (e1, e2) -> e1.getWeight()-e2.getWeight());
-		Arrays.sort(e, (e1, e2) -> e2.getDepth()-e2.getDepth());
+		Arrays.sort(e, (e1, e2) -> e1.getWeight() - e2.getWeight());
+		Arrays.sort(e, (e1, e2) -> e2.getDepth() - e1.getDepth());
 		for(Edge temp: e) {
 			System.out.println(temp);
 		}
+	}
+	
+	/*
+	 * Procedure 1 initializes the edge adjacency list and finalizes a select number of edges for the MLC tree.
+	 */
+	@SuppressWarnings("unchecked")
+	public void procedure1() {
+		adjacency = new ArrayList[edges.length];
+		Vertex[] e1 = new Vertex[2];
+		Vertex[] e2 = new Vertex[2];
+		for(int i = 0; i < edges.length; i++) {
+			adjacency[i] = new ArrayList<>();
+		}
+		//Initializes the edge adjacency list.
+	    for(int i = 0; i < edges.length; i++) {
+	    	if(edges[i].getDepth() != 3) {
+	    		
+	    		/*
+	    		 * To increase the efficiency of the overall algorithm, the initialization of the adjacency is interrupted
+	    		 * after finding an edge with a depth of 3. This indicates an isolation of the edges for the first step of
+	    		 * the algorithm because all other vertices not reached at this point still have a degree of 0. Otherwise,
+	    		 * a separate list and degree list/adjacency list with vertices would have to be kept.
+	    		 */
+	    		for(int k = 0; k < i; k++) {
+	    			if(edges[i].getVertices()[0].getDegree() == 1 || edges[i].getVertices()[1].getDegree() == 1) {
+	    				edges[i].setFinalized();
+	    			}
+	    		}
+	    	}
+	    	//System.out.println("i: "+ i);
+	    	for(int j = i+1; j < edges.length; j++) {
+	    		//System.out.println("j: "+ j);
+	    		e1 = edges[i].getVertices();
+	    		e2 = edges[j].getVertices();
+	    		e1[0].incDegree();
+	    		e1[1].incDegree();
+	    		if(e1[0].equals(e2[0])) {
+		    		adjacency[i].add(edges[j]);
+		    		System.out.println(i + ":" + j);
+		    		e1[0].incDegree();
+		    		e2[1].incDegree();
+	    		}
+	    		else if(e1[0].equals(e2[1])) {
+	    			adjacency[i].add(edges[j]);
+	    			System.out.println(i + ":" + j);
+	    			e1[0].incDegree();
+	    			e2[0].incDegree();
+	    		}
+	    		else if(e1[1].equals(e2[0])) {
+	    			adjacency[i].add(edges[j]);
+		    		System.out.println(i + ":" + j);
+		    		e1[1].incDegree();
+		    		e2[1].incDegree();
+	    		}
+	    		else if(e1[1].equals(e2[1])) {
+	    			adjacency[i].add(edges[j]);
+	    			System.out.println(i + ":" + j);
+	    			e1[1].incDegree();
+	    			e2[0].incDegree();
+	    		}
+	    	}
+	    }
+	    System.out.println("Adjacency list has been initialized successfully.");
 	}
 	
 	public ArrayList<Edge> minimumIOEdges() {
@@ -203,6 +253,12 @@ public class Graph{
 	}
 	public ArrayList<Edge> getIOEdges(){
 		return minimumIOEdge;
+	}
+	public ArrayList<Edge>[] getAdjacencyList(){
+		return adjacency;
+	}
+	public ArrayList<Edge> getEdgeAdjacency(Edge e){
+		return adjacency[e.getID()];
 	}
 	
 	//@Override

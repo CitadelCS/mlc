@@ -28,16 +28,28 @@ public class Edge {
 		
 	}
 	
-	public Edge copy() {
-		return new Edge(weight, id, vertices[0], vertices[1]);
-	}
-	
-	public String toString() {
-		return("ID:" + id + ", Weight: " + weight + ", Outer: " + depth + ", Selected: " + selected + ", Finalized: " + finalized);
-	}
-	
 	public int getID() {
 		return id;
+	}
+	
+	public int getSelected() {
+		return selected;
+	}
+	
+	public boolean getFinalized() {
+		return finalized;
+	}
+	
+	public int getDepth() {
+		return depth;
+	}
+	
+	public int getWeight() {
+		return weight;
+	}
+	
+	public Vertex[] getVertices(){
+		return vertices;
 	}
 	
 	public void setSelected() {
@@ -61,24 +73,16 @@ public class Edge {
 		}
 	}
 	
-	public int getSelected() {
-		return selected;
+	public void setFinalized() {
+		finalized = !finalized;
 	}
 	
-	public boolean getFinalized() {
-		return finalized;
+	public Edge copy() {
+		return new Edge(weight, id, vertices[0], vertices[1]);
 	}
 	
-	public int getDepth() {
-		return depth;
-	}
-	
-	public int getWeight() {
-		return weight;
-	}
-	
-	public Vertex[] getVertices(){
-		return vertices;
+	public String toString() {
+		return("ID:" + id + ", Weight: " + weight + ", Depth: " + depth + ", Selected: " + selected + ", Finalized: " + finalized);
 	}
 	
 	@Override

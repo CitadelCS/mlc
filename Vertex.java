@@ -1,22 +1,32 @@
 package mlc.components;
 
-import java.util.ArrayList;
-
 public class Vertex {
-	
-	private ArrayList<Edge> edges =  new ArrayList<>();
-	private ArrayList<Region> regions = new ArrayList<>();
 	private boolean selected, root, leaf, finalized;
+	private int degree = 0;
 	private final int id, depth;
 	
 	public Vertex(int d, int id) {
-		
 		depth = d;
 		root = false;
 		leaf = false;
 		finalized = false;
 		this.id = id;
-		
+	}
+	
+	public boolean getFinalized() {
+		return finalized;
+	}
+	
+	public boolean getLeaf() {
+		return leaf;
+	}
+	
+	public boolean getRoot() {
+		return root;
+	}
+	
+	public int getDegree() {
+		return degree;
 	}
 	
 	public int getID() {
@@ -27,32 +37,32 @@ public class Vertex {
 		return selected;
 	}
 	
-	public void setSelected() {
-		selected = !selected;
-	}
-	
 	public int getDepth() {
 		return depth;
 	}
 	
-	public ArrayList<Edge> getEdges(){
-		return edges;
+	public void incDegree() {
+		degree++;
 	}
 	
-	public ArrayList<Region> getRegion(){
-		return regions;
+	public void setSelected() {
+		selected = !selected;
 	}
 	
-	public boolean finalized() {
-		return finalized;
+	public void setLeaf() {
+		leaf = !leaf;
 	}
 	
-	public boolean leaf() {
-		return leaf;
+	public void setRoot() {
+		root = !root;
 	}
 	
-	public boolean root() {
-		return root;
+	public void setFinalized() {
+		finalized = !finalized;
+	}
+	
+	public String toString() {
+		return("ID: " + id + ", Depth: " + depth + ", Degree:" + degree);
 	}
 
 	@Override
