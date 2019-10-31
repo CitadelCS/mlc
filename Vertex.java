@@ -1,11 +1,18 @@
 package mlc.components;
 
-public class Vertex {
+import java.util.ArrayList;
+
+public class Vertex
+{
+
+	private ArrayList<Region> regions;
 	private boolean selected, root, leaf, finalized;
 	private int degree = 0;
+	private int weight= 0;
 	private final int id, depth;
 
-	public Vertex(int d, int id) {
+	public Vertex(int d, int id)
+	{
 		depth = d;
 		root = false;
 		leaf = false;
@@ -13,60 +20,95 @@ public class Vertex {
 		this.id = id;
 	}
 
-	public boolean getFinalized() {
+	public ArrayList<Region> getRegions()
+	{
+		return regions;
+	}
+
+	public boolean getFinalized()
+	{
 		return finalized;
 	}
 
-	public boolean getLeaf() {
+	public boolean getLeaf()
+	{
 		return leaf;
 	}
 
-	public boolean getRoot() {
+	public boolean getRoot()
+	{
 		return root;
 	}
 
-	public int getDegree() {
+	public int getDegree()
+	{
 		return degree;
 	}
 
-	public int getID() {
+	public int getID()
+	{
 		return id;
 	}
 
-	public boolean getSelected() {
+	public boolean getSelected()
+	{
 		return selected;
 	}
 
-	public int getDepth() {
+	public int getDepth()
+	{
 		return depth;
 	}
+	
+	public int getWeight() {
+		return weight;
+	}
 
-	public void incDegree() {
+	public void incDegree()
+	{
 		degree++;
 	}
 
-	public void setSelected() {
-		selected = !selected;
+	public void setRegion(Region r)
+	{
+		regions.add(r);
 	}
 
-	public void setLeaf() {
+	public void setWeight(int w) {
+		weight += w;
+	}
+	
+	public void setSelected()
+	{
+		if(selected == false)
+		{
+			selected = true;
+		}
+	}
+
+	public void setLeaf()
+	{
 		leaf = !leaf;
 	}
 
-	public void setRoot() {
+	public void setRoot()
+	{
 		root = !root;
 	}
 
-	public void setFinalized() {
+	public void setFinalized()
+	{
 		finalized = !finalized;
 	}
 
-	public String toString() {
-		return ("ID: " + id + ", Depth: " + depth + ", Degree:" + degree);
+	public String toString()
+	{
+		return("ID: " + id + ", Depth: " + depth + ", Degree:" + degree);
 	}
 
 	@Override
-	public int hashCode() {
+	public int hashCode()
+	{
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + degree;
@@ -80,31 +122,30 @@ public class Vertex {
 	}
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
+	public boolean equals(Object obj)
+	{
+		if(this == obj)
 			return true;
-		if (obj == null)
+		if(obj == null)
 			return false;
-		if (getClass() != obj.getClass())
+		if(getClass() != obj.getClass())
 			return false;
 		Vertex other = (Vertex) obj;
-		if (degree != other.degree)
+		if(degree != other.degree)
 			return false;
-		if (depth != other.depth)
+		if(depth != other.depth)
 			return false;
-		if (finalized != other.finalized)
+		if(finalized != other.finalized)
 			return false;
-		if (id != other.id)
+		if(id != other.id)
 			return false;
-		if (leaf != other.leaf)
+		if(leaf != other.leaf)
 			return false;
-		if (root != other.root)
+		if(root != other.root)
 			return false;
-		if (selected != other.selected)
+		if(selected != other.selected)
 			return false;
 		return true;
 	}
-
-	
 
 }

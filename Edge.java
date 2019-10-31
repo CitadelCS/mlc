@@ -2,92 +2,138 @@ package mlc.components;
 
 import java.util.Arrays;
 
-public class Edge {
+public class Edge
+{
 
+	private Region[] regions = new Region[2];
 	private Vertex[] vertices = new Vertex[2];
 	private int weight, id, selected;
 	private boolean finalized;
 	private final int depth;
 
-	public Edge(int w, int i, Vertex u, Vertex v) {
+	public Edge(int w, int i, Vertex u, Vertex v)
+	{
 
 		vertices[0] = u;
 		vertices[1] = v;
 		weight = w;
 		id = i;
-		if (u.getDepth() == 1 && v.getDepth() == 1) {
+
+		// Both vertices have a depth of 1, so the edge has a depth of 1.
+		if (u.getDepth() == 1 && v.getDepth() == 1)
+		{
 			depth = 1;
-			// Both vertices have a depth of 1, so the edge has a depth of 1.
-		} else if ((u.getDepth() == 2 && v.getDepth() == 2) || (u.getDepth() == 3 || v.getDepth() == 3)) {
+		}
+
+		// Both vertices have a depth of 2 or at least one has a depth of 3,
+		// then the
+		// edge has a depth of 3.
+		else if ((u.getDepth() == 2 && v.getDepth() == 2)
+				|| (u.getDepth() == 3 || v.getDepth() == 3))
+		{
 			depth = 3;
-			// Both vertices have a depth of 2 or at least one has a depth of 3, then the
-			// edge has a depth of 3.
-		} else {
+		}
+
+		// All other cases can only be an edge with a depth of 2.
+		else
+		{
 			depth = 2;
-			// All other cases can only be an edge with a depth of 2.
 		}
 
 	}
 
-	public int getID() {
+	public int getID()
+	{
 		return id;
 	}
 
-	public int getSelected() {
+	public int getSelected()
+	{
 		return selected;
 	}
 
-	public boolean getFinalized() {
+	public boolean getFinalized()
+	{
 		return finalized;
 	}
 
-	public int getDepth() {
+	public int getDepth()
+	{
 		return depth;
 	}
 
-	public int getWeight() {
+	public int getWeight()
+	{
 		return weight;
 	}
 
-	public Vertex[] getVertices() {
+	public Vertex[] getVertices()
+	{
 		return vertices;
 	}
 
-	public void setSelected() {
-		if (selected == 0) {
+	public Region[] getRegions()
+	{
+		return regions;
+	}
+
+	public void setRegion(Region r)
+	{
+		if (regions[0] == null)
+		{
+			regions[1] = r;
+		} else
+		{
+			regions[0] = r;
+		}
+	}
+
+	public void setSelected()
+	{
+		if (selected == 0)
+		{
 			selected = 1;
-			if (vertices[0].getSelected() == false) {
+			if (vertices[0].getSelected() == false)
+			{
 				vertices[0].setSelected();
 			}
-			if (vertices[1].getSelected() == false) {
+			if (vertices[1].getSelected() == false)
+			{
 				vertices[1].getSelected();
 			}
-		} else {
+		} else
+		{
 			selected = 0;
-			if (vertices[0].getSelected() == true) {
+			if (vertices[0].getSelected() == true)
+			{
 				vertices[0].setSelected();
 			}
-			if (vertices[1].getSelected() == true) {
+			if (vertices[1].getSelected() == true)
+			{
 				vertices[1].setSelected();
 			}
 		}
 	}
 
-	public void setFinalized() {
+	public void setFinalized()
+	{
 		finalized = !finalized;
 	}
 
-	public Edge copy() {
+	public Edge copy()
+	{
 		return new Edge(weight, id, vertices[0], vertices[1]);
 	}
 
-	public String toString() {
-		return ("ID:" + id + ", Weight: " + weight + ", Depth: " + depth + ", Selected: " + selected + ", Finalized: "
-				+ finalized);
+	public String toString()
+	{
+		return ("ID:" + id + ", Weight: " + weight + ", Depth: " + depth
+				+ ", Selected: " + selected + ", Finalized: " + finalized);
 	}
 
 	@Override
-	public int hashCode() {
+	public int hashCode()
+	{
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + depth;
@@ -100,7 +146,8 @@ public class Edge {
 	}
 
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(Object obj)
+	{
 		if (this == obj)
 			return true;
 		if (obj == null)
@@ -122,6 +169,5 @@ public class Edge {
 			return false;
 		return true;
 	}
-
 
 }
