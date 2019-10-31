@@ -15,26 +15,32 @@ public class Region
 	public Region(ArrayList<Edge> e, int id)
 	{
 		edges.addAll(e);
-		for (Edge temp : edges)
+		for(Edge temp : edges)
 		{
 			vertices.add(temp.getVertices()[0]);
 			vertices.add(temp.getVertices()[1]);
 		}
-		
+
 		/*
-		 * The depth of the region initially is set to 3. If there is a vertex with depth of 1,
-		 * then the region is either depth 2 or 1. Thus, if the depth = 1 after the first for loop,
-		 * a single vertex not of depth 1 would mean the region is of depth 2.
+		 * The depth of the region initially is set to 3. If there is a vertex with
+		 * depth of 1, then the region is either depth 2 or 1. Thus, if the depth = 1
+		 * after the first for loop, a single vertex not of depth 1 would mean the
+		 * region is of depth 2.
 		 */
 		depth = 3;
-		for(Vertex v: vertices) {
-			if(v.getDepth() == 1) {
+		for(Vertex v : vertices)
+		{
+			if(v.getDepth() == 1)
+			{
 				depth = 1;
 			}
 		}
-		if(depth == 1) {
-			for(Vertex v: vertices) {
-				if(v.getDepth() != 1) {
+		if(depth == 1)
+		{
+			for(Vertex v : vertices)
+			{
+				if(v.getDepth() != 1)
+				{
 					depth = 2;
 				}
 			}
@@ -42,26 +48,29 @@ public class Region
 		this.id = id;
 		resolved = false;
 		hold = false;
-		Collections.sort(edges, (e1,e2) -> e1.getWeight() - e2.getWeight());
+		Collections.sort(edges, (e1, e2) -> e1.getWeight() - e2.getWeight());
 	}
 
 	public void setCovered()
 	{
-		if (covered == false)
+		if(covered == false)
 		{
 			covered = true;
 		}
 	}
-	
-	public void setHold() {
+
+	public void setHold()
+	{
 		hold = !hold;
 	}
-	
-	public void setResolved() {
+
+	public void setResolved()
+	{
 		resolved = !resolved;
 	}
-	
-	public boolean getHold() {
+
+	public boolean getHold()
+	{
 		return hold;
 	}
 
@@ -89,8 +98,9 @@ public class Region
 	{
 		return covered;
 	}
-	
-	public boolean getResolved() {
+
+	public boolean getResolved()
+	{
 		return resolved;
 	}
 

@@ -23,8 +23,8 @@ public class Graph
 	private ArrayList<Edge> minimumIOEdge;
 
 	/*
-	 * The length matches the number of edges. Then a reference to the Edge
-	 * object is kept in the 2-D adjustable array.
+	 * The length matches the number of edges. Then a reference to the Edge object
+	 * is kept in the 2-D adjustable array.
 	 */
 	private ArrayList<Edge>[] adjacency;
 
@@ -37,10 +37,9 @@ public class Graph
 	/*
 	 * The following method requests a file path from the user to initialize the
 	 * graph class. Then the file is read according to the following format:
-	 * Vertices # of Vertices Depth of Vertices (Vertex per line) Edges # of
-	 * Edges Weight,Vertex u, Vertex v (Vertices are the indexes, Edge per line)
-	 * Regions # of Regions Edge 1,Edge 2,...,Edge 3 (Edges are the indexes,
-	 * Region per line)
+	 * Vertices # of Vertices Depth of Vertices (Vertex per line) Edges # of Edges
+	 * Weight,Vertex u, Vertex v (Vertices are the indexes, Edge per line) Regions #
+	 * of Regions Edge 1,Edge 2,...,Edge 3 (Edges are the indexes, Region per line)
 	 */
 	private void initialize(File source) throws Exception
 	{
@@ -62,9 +61,8 @@ public class Graph
 		vertices = new Vertex[num];
 
 		/*
-		 * Adds the vertices to the Vertex[] from the file. Reads for a 1, 2, or
-		 * 3 to determine the depth of the vertex, where 3 represents a depth >=
-		 * 3.
+		 * Adds the vertices to the Vertex[] from the file. Reads for a 1, 2, or 3 to
+		 * determine the depth of the vertex, where 3 represents a depth >= 3.
 		 */
 		sc.nextLine();
 		for(int i = 0; i < num; i++)
@@ -74,8 +72,7 @@ public class Graph
 			// Throws an exception if either true or false are not used.
 			if(temp.matches("[^0-3]"))
 			{
-				throw new Exception(
-							"The depth of the vertex can only be 1, 2, or 3.");
+				throw new Exception("The depth of the vertex can only be 1, 2, or 3.");
 			}
 			vertices[i] = new Vertex(Integer.parseInt(temp), i);
 		}
@@ -85,8 +82,7 @@ public class Graph
 		temp = sc.nextLine();
 		if(!temp.equals("Edges"))
 		{
-			throw new Exception(
-						"The word \"Edges\" must be denoted followed by the number of edges on a new line.");
+			throw new Exception("The word \"Edges\" must be denoted followed by the number of edges on a new line.");
 		}
 
 		// Reads the number of edges to follow. Initializes the array, edges, to
@@ -97,9 +93,9 @@ public class Graph
 		sc.nextLine();
 
 		/*
-		 * Adds the edges to the Edge[] from the file. Reads numbers separated
-		 * by a comma with the first being the weight. These are the vertices,
-		 * by zero-index, in correspondence to the Vertex[] initialization.
+		 * Adds the edges to the Edge[] from the file. Reads numbers separated by a
+		 * comma with the first being the weight. These are the vertices, by zero-index,
+		 * in correspondence to the Vertex[] initialization.
 		 */
 		for(int i = 0; i < num; i++)
 		{
@@ -109,12 +105,10 @@ public class Graph
 			// used.
 			if(temp.matches("[^0-9,]"))
 			{
-				throw new Exception(
-							"There must only be numbers separated by a comma for an edge input.");
+				throw new Exception("There must only be numbers separated by a comma for an edge input.");
 			}
 			input = temp.split(",", 0);
-			edges[i] = new Edge(Integer.parseInt(input[0]), i,
-						vertices[Integer.parseInt(input[1])],
+			edges[i] = new Edge(Integer.parseInt(input[0]), i, vertices[Integer.parseInt(input[1])],
 						vertices[Integer.parseInt(input[2])]);
 		}
 		System.out.println("Edges have been successfully initialized.\n");
@@ -135,10 +129,9 @@ public class Graph
 		sc.nextLine();
 
 		/*
-		 * Adds the regions to the Region[] from the file. Reads the boolean for
-		 * the conditional outer followed by numbers separated by a comma. These
-		 * are the edges, by zero-index, in correspondence to the Edge[]
-		 * initialization.
+		 * Adds the regions to the Region[] from the file. Reads the boolean for the
+		 * conditional outer followed by numbers separated by a comma. These are the
+		 * edges, by zero-index, in correspondence to the Edge[] initialization.
 		 */
 		for(int i = 0; i < num; i++)
 		{
@@ -149,8 +142,7 @@ public class Graph
 			// used.
 			if(temp.matches("[^0-9,]"))
 			{
-				throw new Exception(
-							"There must only be numbers separated by commas for arguments after the first.");
+				throw new Exception("There must only be numbers separated by commas for arguments after the first.");
 			}
 
 			// Creates an ArrayList of edges that is passed as a parameter for a
@@ -164,26 +156,24 @@ public class Graph
 		}
 		System.out.println("Regions have been successfully initialized.\n");
 		adjacencyList();
-		System.out.println(
-					"Adjacency list has been successfully initialized.\n");
+		System.out.println("Adjacency list has been successfully initialized.\n");
 		regionsToVertices();
-		System.out.println(
-					"Regions have been successfully added to vertices.\n");
+		System.out.println("Regions have been successfully added to vertices.\n");
 		regionsToEdges();
 		System.out.println("Regions have been successfully added to edges.\n");
-
+		edgesToVertices();
+		System.out.println("Edges have been successfully added to vertices.\n");
 		minimumIOEdge = minimumIOEdges();
 		sc.close();
 	}
 
 	/*
-	 * Sorts edges by selected status, then weight, then outer status. Since
-	 * merge sort is used for objects, the sort will be stable.
+	 * Sorts edges by selected status, then weight, then outer status. Since merge
+	 * sort is used for objects, the sort will be stable.
 	 */
 	public void sortEdges()
 	{
-		Arrays.sort(edges, (e1, e2) -> (int) e2.getSelected()
-					- (int) e1.getSelected());
+		Arrays.sort(edges, (e1, e2) -> (int) e2.getSelected() - (int) e1.getSelected());
 		Arrays.sort(edges, (e1, e2) -> e1.getWeight() - e2.getWeight());
 		Arrays.sort(edges, (e1, e2) -> e2.getDepth() - e1.getDepth());
 	}
@@ -216,16 +206,24 @@ public class Graph
 		}
 		for(Vertex v : vertices)
 		{
-			Arrays.sort(v.getRegions()
-						.toArray(new Region[v.getRegions().size()]),
-						(r1, r2) -> r1.getID() - r2.getID());
+			Arrays.sort(v.getRegions().toArray(new Region[v.getRegions().size()]), (r1, r2) -> r1.getID() - r2.getID());
+		}
+	}
+
+	private void edgesToVertices()
+	{
+		for(Edge e : edges)
+		{
+			for(Vertex v : e.getVertices())
+			{
+				v.setEdge(e);
+			}
 		}
 	}
 
 	public void sortEdges(Edge[] e)
 	{
-		Arrays.sort(e, (e1, e2) -> (int) e2.getSelected()
-					- (int) e1.getSelected());
+		Arrays.sort(e, (e1, e2) -> (int) e2.getSelected() - (int) e1.getSelected());
 		Arrays.sort(e, (e1, e2) -> e1.getWeight() - e2.getWeight());
 		Arrays.sort(e, (e1, e2) -> e2.getDepth() - e1.getDepth());
 	}

@@ -6,9 +6,10 @@ public class Vertex
 {
 
 	private ArrayList<Region> regions;
+	private ArrayList<Edge> edges;
 	private boolean selected, root, leaf, finalized;
 	private int degree = 0;
-	private int weight= 0;
+	private int weight = 0;
 	private final int id, depth;
 
 	public Vertex(int d, int id)
@@ -59,9 +60,15 @@ public class Vertex
 	{
 		return depth;
 	}
-	
-	public int getWeight() {
+
+	public int getWeight()
+	{
 		return weight;
+	}
+
+	public ArrayList<Edge> getEdges()
+	{
+		return edges;
 	}
 
 	public void incDegree()
@@ -74,10 +81,11 @@ public class Vertex
 		regions.add(r);
 	}
 
-	public void setWeight(int w) {
-		weight += w;
+	public void setWeight(int w)
+	{
+		weight = w;
 	}
-	
+
 	public void setSelected()
 	{
 		if(selected == false)
@@ -99,6 +107,11 @@ public class Vertex
 	public void setFinalized()
 	{
 		finalized = !finalized;
+	}
+
+	public void setEdge(Edge e)
+	{
+		edges.add(e);
 	}
 
 	public String toString()

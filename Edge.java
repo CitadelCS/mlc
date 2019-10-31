@@ -20,7 +20,7 @@ public class Edge
 		id = i;
 
 		// Both vertices have a depth of 1, so the edge has a depth of 1.
-		if (u.getDepth() == 1 && v.getDepth() == 1)
+		if(u.getDepth() == 1 && v.getDepth() == 1)
 		{
 			depth = 1;
 		}
@@ -28,8 +28,7 @@ public class Edge
 		// Both vertices have a depth of 2 or at least one has a depth of 3,
 		// then the
 		// edge has a depth of 3.
-		else if ((u.getDepth() == 2 && v.getDepth() == 2)
-				|| (u.getDepth() == 3 || v.getDepth() == 3))
+		else if((u.getDepth() == 2 && v.getDepth() == 2) || (u.getDepth() == 3 || v.getDepth() == 3))
 		{
 			depth = 3;
 		}
@@ -79,10 +78,11 @@ public class Edge
 
 	public void setRegion(Region r)
 	{
-		if (regions[0] == null)
+		if(regions[0] == null)
 		{
 			regions[1] = r;
-		} else
+		}
+		else
 		{
 			regions[0] = r;
 		}
@@ -90,25 +90,26 @@ public class Edge
 
 	public void setSelected()
 	{
-		if (selected == 0)
+		if(selected == 0)
 		{
 			selected = 1;
-			if (vertices[0].getSelected() == false)
+			if(vertices[0].getSelected() == false)
 			{
 				vertices[0].setSelected();
 			}
-			if (vertices[1].getSelected() == false)
+			if(vertices[1].getSelected() == false)
 			{
 				vertices[1].getSelected();
 			}
-		} else
+		}
+		else
 		{
 			selected = 0;
-			if (vertices[0].getSelected() == true)
+			if(vertices[0].getSelected() == true)
 			{
 				vertices[0].setSelected();
 			}
-			if (vertices[1].getSelected() == true)
+			if(vertices[1].getSelected() == true)
 			{
 				vertices[1].setSelected();
 			}
@@ -127,8 +128,8 @@ public class Edge
 
 	public String toString()
 	{
-		return ("ID:" + id + ", Weight: " + weight + ", Depth: " + depth
-				+ ", Selected: " + selected + ", Finalized: " + finalized);
+		return("ID:" + id + ", Weight: " + weight + ", Depth: " + depth + ", Selected: " + selected + ", Finalized: "
+					+ finalized);
 	}
 
 	@Override
@@ -148,24 +149,24 @@ public class Edge
 	@Override
 	public boolean equals(Object obj)
 	{
-		if (this == obj)
+		if(this == obj)
 			return true;
-		if (obj == null)
+		if(obj == null)
 			return false;
-		if (getClass() != obj.getClass())
+		if(getClass() != obj.getClass())
 			return false;
 		Edge other = (Edge) obj;
-		if (depth != other.depth)
+		if(depth != other.depth)
 			return false;
-		if (finalized != other.finalized)
+		if(finalized != other.finalized)
 			return false;
-		if (id != other.id)
+		if(id != other.id)
 			return false;
-		if (selected != other.selected)
+		if(selected != other.selected)
 			return false;
-		if (!Arrays.equals(vertices, other.vertices))
+		if(!Arrays.equals(vertices, other.vertices))
 			return false;
-		if (weight != other.weight)
+		if(weight != other.weight)
 			return false;
 		return true;
 	}

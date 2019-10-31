@@ -82,11 +82,12 @@ public class Algorithm
 		for(int i = 0; i < pMinIOEdges.size(); i++)
 		{
 
-			// Creates copies of the arrays of vertices, edges, and regions for
+			// Creates copies of the arrays of vertices, edges, regions, and adjacency list for
 			// mutual exclusion.
 			Vertex[] vertices = g.getVertices().clone();
 			Edge[] edges = g.getEdges().clone();
 			Region[] regions = g.getRegions().clone();
+			ArrayList<Edge>[] adjacency = g.getAdjacencyList().clone();
 
 			// Finalizing the minimum IO edge used and adding it to the tree.
 			edges[pMinIOEdges.get(i).getID()].setFinalized();
@@ -115,21 +116,18 @@ public class Algorithm
 					{
 						if(temp.getDepth() == 3)
 						{
-							cycleResolver(temp);
+							cycleResolver(temp, vertices, edges, regions, adjacency);
 						}
 					}
 				}
 			}
-
-			// Obtains a copy of adjacency list to allow removal of edges during procedure.
-			ArrayList<Edge>[] copyAdjacency = g.getAdjacencyList().clone();
 
 			/*
 			 * An array of minimum adjacent edges to the edges in the tree, with each edge
 			 * getting a "representative" in the array.
 			 */
 			Edge[] minWeight = new Edge[edges.length];
-			updateAdjacency(pMinIOEdges.get(i).getID(), tree[0].size(), minWeight, copyAdjacency);
+			updateAdjacency(pMinIOEdges.get(i).getID(), tree[0].size(), minWeight, adjacency);
 
 			/*
 			 * The following will loop through until all the regions have been covered.
@@ -146,16 +144,16 @@ public class Algorithm
 				 * Updates the vertex if it has not already been added to tree along with new
 				 * regions covered. Then the regions covered are resolved as applicable.
 				 */
-				if(u.getWeight() != 0)
+				if(u.getWeight() == 0)
 				{
-					u.setWeight(minWeight[0].getWeight());
+					u.setWeight(minWeight[0].getWeight() + v.getWeight());
 					u.setSelected();
 					for(Region r : u.getRegions())
 					{
 						r.setCovered();
 						if(r.getDepth() == 3 && r.getResolved() == false)
 						{
-							cycleResolver(r);
+							cycleResolver(r, vertices, edges, regions, adjacency);
 						}
 					}
 
@@ -167,16 +165,16 @@ public class Algorithm
 				 * Updates the vertex if it has not already been added to tree along with new
 				 * regions covered. Then the regions covered are resolved as applicable.
 				 */
-				if(v.getWeight() != 0)
+				if(v.getWeight() == 0)
 				{
-					v.setWeight(minWeight[0].getWeight());
+					v.setWeight(minWeight[0].getWeight() + u.getWeight());
 					v.setSelected();
 					for(Region r : v.getRegions())
 					{
 						r.setCovered();
 						if(r.getDepth() == 3 && r.getResolved() == false)
 						{
-							cycleResolver(r);
+							cycleResolver(r, vertices, edges, regions, adjacency);
 						}
 					}
 
@@ -195,12 +193,12 @@ public class Algorithm
 	 * sorts by weight. If the first condition is not satisfied, a null value is put
 	 * as a filler.
 	 */
-	private void updateAdjacency(int edgeID, int numOfEdges, Edge[] minWeight, ArrayList<Edge>[] copyAdjacency)
+	private void updateAdjacency(int edgeID, int numOfEdges, Edge[] minWeight, ArrayList<Edge>[] adjacency)
 	{
-		if(copyAdjacency[edgeID].get(0) != null && copyAdjacency[edgeID].get(0).getDepth() == 3)
+		if(adjacency[edgeID].get(0) != null && adjacency[edgeID].get(0).getDepth() == 3)
 		{
-			minWeight[tree[numOfEdges].size()] = copyAdjacency[edgeID].get(0);
-			copyAdjacency[edgeID].remove(0);
+			minWeight[tree[numOfEdges].size()] = adjacency[edgeID].get(0);
+			adjacency[edgeID].remove(0);
 			Arrays.sort(minWeight, (e1, e2) -> e1.getWeight() - e2.getWeight());
 		}
 		else
@@ -214,10 +212,47 @@ public class Algorithm
 	 * are added to the tree, then the method will recursively call itself until all
 	 * regions covered are either resolved or on hold.
 	 */
-	private void cycleResolver(Region r)
+	private void cycleResolver(Region r, Vertex[] vertices, Edge[] edges, Region[] regions, ArrayList<Edge>[] adjacency)
 	{
-		Edge[] temp = new Edge[r.getEdges().size()];
-
+		Edge[] path1 = new Edge[r.getEdges().size()/2];
+		Edge[] path2 = new Edge[(r.getEdges().size()/2) - path1.length];
+		
+		//The indices represent the information as follows: vertex id, vertex weight
+		int[] rootInfo = {-1,-1};
+		for(Vertex v: r.getVertices()) 
+		{
+			if(rootInfo[0] == -1 || vertices[v.getID()].getWeight() < rootInfo[1]) 
+			{
+				rootInfo[0] = v.getID();
+				rootInfo[1] = v.getWeight();
+			}
+		}
+		
+		if(path1.length == path2.length) {
+			//Initializes the two separate paths first edge.
+			for(int i = 0; i < vertices[rootInfo[0]].getEdges().size(); i++) {
+				if(r.getEdges().contains(vertices[rootInfo[0]].getEdges().get(i))) 
+				{
+					if(path1[0] == null) 
+					{
+						path1[0] = vertices[rootInfo[0]].getEdges().get(i);
+					}
+					else 
+					{
+						path2[0] = vertices[rootInfo[0]].getEdges().get(i);
+					}
+				}
+			}
+			
+			//Adds edges to path1 until half of the edges in region are contained in path1
+			for(int i = 1; i < path1.length; i++) {
+				for(int j = 0; j < adjacency[path1[i-1].getID()].size(); j++) {
+					if(r.getEdges().contains(adjacency[path1[i-1].getID()].get(j)) && !Arrays.asList(path2).contains(adjacency[path1[i-1].getID()].get(j))) {
+						path1[i] = adjacency[path1[i-1].getID()].get(j);
+					}
+				}
+			}
+		}
 	}
 
 	public void printEdges()
