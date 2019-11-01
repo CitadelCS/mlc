@@ -231,52 +231,53 @@ public class Algorithm
 			}
 		}
 
+		// Initializes the two separate paths first edge.
+		for(int i = 0; i < vertices[rootInfo[0]].getEdges().size(); i++)
+		{
+			if(r.getEdges().contains(vertices[rootInfo[0]].getEdges().get(i)))
+			{
+				if(path1[0] == null)
+				{
+					path1[0] = vertices[rootInfo[0]].getEdges().get(i);
+				}
+				else
+				{
+					path2[0] = vertices[rootInfo[0]].getEdges().get(i);
+				}
+			}
+		}
+
+		// Adds edges to path1 until half of the edges in region are contained in path1
+		for(int i = 1; i < path1.length; i++)
+		{
+			for(int j = 0; j < adjacency[path1[i - 1].getID()].size(); j++)
+			{
+				if(r.getEdges().contains(adjacency[path1[i - 1].getID()].get(j))
+							&& !Arrays.asList(path2).contains(adjacency[path1[i - 1].getID()].get(j)))
+				{
+					// Need to check this for reference passing rather than copy and all other
+					// similar things above.
+					path1[i] = adjacency[path1[i - 1].getID()].get(j);
+				}
+			}
+		}
+
+		/*
+		 * Adds edges to path2 until there are no remaining edges not contained in path1
+		 * and path2.
+		 */
+		int i = 1;
+		for(Edge e : r.getEdges())
+		{
+			if(!Arrays.asList(path1).contains(e) && !e.equals(path2[0]))
+			{
+				path2[i] = e;
+				i++;
+			}
+		}
+
 		if(path1.length == path2.length)
 		{
-			// Initializes the two separate paths first edge.
-			for(int i = 0; i < vertices[rootInfo[0]].getEdges().size(); i++)
-			{
-				if(r.getEdges().contains(vertices[rootInfo[0]].getEdges().get(i)))
-				{
-					if(path1[0] == null)
-					{
-						path1[0] = vertices[rootInfo[0]].getEdges().get(i);
-					}
-					else
-					{
-						path2[0] = vertices[rootInfo[0]].getEdges().get(i);
-					}
-				}
-			}
-
-			// Adds edges to path1 until half of the edges in region are contained in path1
-			for(int i = 1; i < path1.length; i++)
-			{
-				for(int j = 0; j < adjacency[path1[i - 1].getID()].size(); j++)
-				{
-					if(r.getEdges().contains(adjacency[path1[i - 1].getID()].get(j))
-								&& !Arrays.asList(path2).contains(adjacency[path1[i - 1].getID()].get(j)))
-					{
-						// Need to check this for reference passing rather than copy and all other
-						// similar things above.
-						path1[i] = adjacency[path1[i - 1].getID()].get(j);
-					}
-				}
-			}
-
-			/*
-			 * Adds edges to path2 until there are no remaining edges not contained in path1
-			 * and path2.
-			 */
-			int i = 1;
-			for(Edge e : r.getEdges())
-			{
-				if(!Arrays.asList(path1).contains(e) && !e.equals(path2[0]))
-				{
-					path2[i] = e;
-					i++;
-				}
-			}
 
 			/*
 			 * Creating hashsets to easily compare the regions covered by each path.
@@ -302,8 +303,15 @@ public class Algorithm
 			{
 				regions[r.getID()].setHold();
 			}
+
+			/*
+			 * The following else if statements add the edges of the path to the tree while
+			 * making sure the weights are updated accordingly. This will resolve all
+			 * regions recursively until the region is either resolved or on hold.
+			 */
 			else if(set1.containsAll(set2))
 			{
+				regions[r.getID()].setResolved();
 				for(Edge e : path1)
 				{
 					tree[treeIndex].add(edges[e.getID()]);
@@ -326,6 +334,7 @@ public class Algorithm
 			}
 			else if(set2.containsAll(set1))
 			{
+				regions[r.getID()].setResolved();
 				for(Edge e : path2)
 				{
 					tree[treeIndex].add(edges[e.getID()]);
@@ -348,19 +357,146 @@ public class Algorithm
 			}
 			else
 			{
-				altCycleResolver(r, vertices, edges, regions, adjacency, treeIndex);
+				altCycleResolver(r, vertices, edges, regions, adjacency, treeIndex, path1, path2);
 			}
 		}
 		else
 		{
-			altCycleResolver(r, vertices, edges, regions, adjacency, treeIndex);
+			altCycleResolver(r, vertices, edges, regions, adjacency, treeIndex, path1, path2);
 		}
 	}
 
 	private void altCycleResolver(Region r, Vertex[] vertices, Edge[] edges, Region[] regions,
-				ArrayList<Edge>[] adjacency, int treeIndex)
+				ArrayList<Edge>[] adjacency, int treeIndex, Edge[] path1, Edge[] path2)
 	{
-		// Placeholder.
+
+		/*
+		 * Create a path where adjacent edges are adjacent in the array. Index 0 and
+		 * Index path.length - 1 are adjacent.
+		 */
+		Edge[] path = new Edge[path1.length + path2.length];
+		for(int i = 0; i < path1.length; i++)
+		{
+			path[i] = path1[i];
+		}
+		for(int i = 0; i < path2.length; i++)
+		{
+			path[path1.length + i] = path2[path2.length - 1 - i];
+		}
+		int weight2Edges, weight1Edge, indexPair1, indexPair2, indexMax;
+		weight2Edges = 0;
+		weight1Edge = 0;
+		indexPair1 = 0;
+		indexPair2 = 0;
+		indexMax = 0;
+
+		/*
+		 * The values set to 0 above are updated to represent the indices of the
+		 * greatest weighted pair of edges and weight of the greatest weighted pair of
+		 * edges plus the index and weight of the greatest weighted edge. Checks to make
+		 * sure the union of two edges for the shared vertex does not have a degree of
+		 * 4+ or the vertex connecting the region to the tree is selected for the pair
+		 * of edges.
+		 */
+		for(int i = 0; i < path.length; i++)
+		{
+			if(path[i].getWeight() > weight1Edge)
+			{
+				weight1Edge = path[i].getWeight();
+				indexMax = i;
+			}
+			if(path[i].getWeight() + path[(i + 1) % path.length].getWeight() > weight2Edges
+						&& (i != (path.length - 1) && (i + 1) % path.length != 0))
+			{
+				if(path[i].getVertices()[0].equals(path[(i + 1) % path.length].getVertices()[0])
+							&& path[i].getVertices()[0].getDegree() < 4)
+				{
+					weight2Edges = path[i].getWeight() + path[(i + 1) % path.length].getWeight();
+					indexPair1 = i;
+					indexPair2 = (i + 1) % path.length;
+				}
+				else if(path[i].getVertices()[0].equals(path[(i + 1) % path.length].getVertices()[1])
+							&& path[i].getVertices()[0].getDegree() < 4)
+				{
+					weight2Edges = path[i].getWeight() + path[(i + 1) % path.length].getWeight();
+					indexPair1 = i;
+					indexPair2 = (i + 1) % path.length;
+				}
+				else if(path[i].getVertices()[1].equals(path[(i + 1) % path.length].getVertices()[0])
+							&& path[i].getVertices()[1].getDegree() < 4)
+				{
+					weight2Edges = path[i].getWeight() + path[(i + 1) % path.length].getWeight();
+					indexPair1 = i;
+					indexPair2 = (i + 1) % path.length;
+				}
+				else if(path[i].getVertices()[1].equals(path[(i + 1) % path.length].getVertices()[1])
+							&& path[i].getVertices()[1].getDegree() < 4)
+				{
+					weight2Edges = path[i].getWeight() + path[(i + 1) % path.length].getWeight();
+					indexPair1 = i;
+					indexPair2 = (i + 1) % path.length;
+				}
+			}
+		}
+
+		/*
+		 * If the two edge indices were never given a new index and the weight of the
+		 * pair of edges exceeds the weight of the greatest weighted edge for the
+		 * region, then the pair of edges will not be added to the graph. Otherwise, the
+		 * greatest weighted edge will be removed from the region. This will resolve
+		 * cycles much like cycleResolver unless the region has been resolved or is on
+		 * hold.
+		 */
+		if(indexPair1 != 0 && indexPair2 != 0 && weight2Edges >= weight1Edge)
+		{
+			regions[r.getID()].setResolved();
+			for(Edge e : path)
+			{
+				if(!e.equals(path[indexPair1]) && !e.equals(path[indexPair2])) {
+					tree[treeIndex].add(edges[e.getID()]);
+					Vertex u = vertices[e.getVertices()[0].getID()];
+					Vertex v = vertices[e.getVertices()[1].getID()];
+					if(u.getWeight() == 0)
+					{
+						u.setWeight(v.getWeight() + e.getWeight());
+						u.setSelected();
+						for(Region r1 : v.getRegions())
+						{
+							r1.setCovered();
+							if(r1.getDepth() == 3 && r1.getHold() == false && r1.getResolved() == false)
+							{
+								cycleResolver(r1, vertices, edges, regions, adjacency, treeIndex);
+							}
+						}
+					}
+				}
+			}
+		}
+		else
+		{
+			regions[r.getID()].setResolved();
+			for(Edge e: path) {
+				if(!e.equals(path[indexMax])) {
+					tree[treeIndex].add(edges[e.getID()]);
+					Vertex u = vertices[e.getVertices()[0].getID()];
+					Vertex v = vertices[e.getVertices()[1].getID()];
+					if(u.getWeight() == 0)
+					{
+						u.setWeight(v.getWeight() + e.getWeight());
+						u.setSelected();
+						for(Region r1 : v.getRegions())
+						{
+							r1.setCovered();
+							if(r1.getDepth() == 3 && r1.getHold() == false && r1.getResolved() == false)
+							{
+								cycleResolver(r1, vertices, edges, regions, adjacency, treeIndex);
+							}
+						}
+					}
+				}
+			}
+		}
+
 	}
 
 	public void printEdges()
