@@ -51,25 +51,28 @@ public class Region
 		Collections.sort(edges, (e1, e2) -> e1.getWeight() - e2.getWeight());
 	}
 
-	public void setCovered()
+	public String toString()
 	{
-		if(covered == false)
-		{
-			covered = true;
-		}
+		return("ID:" + id + ", Depth: " + depth + ", Hold: " + hold + ", Covered: " + covered + ", Resolved: " + resolved + ", # of Edges: "
+					+ edges.size());
 	}
 
-	public void setHold()
+	public void setCovered(boolean b)
 	{
-		hold = !hold;
+		covered = b;
 	}
 
-	public void setResolved()
+	public void setHold(boolean b)
 	{
-		resolved = !resolved;
+		hold = b;
 	}
 
-	public boolean getHold()
+	public void setResolved(boolean b)
+	{
+		resolved = b;
+	}
+
+	public boolean isHold()
 	{
 		return hold;
 	}
@@ -94,12 +97,12 @@ public class Region
 		return vertices;
 	}
 
-	public boolean getCovered()
+	public boolean isCovered()
 	{
 		return covered;
 	}
 
-	public boolean getResolved()
+	public boolean isResolved()
 	{
 		return resolved;
 	}

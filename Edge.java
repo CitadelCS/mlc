@@ -88,30 +88,30 @@ public class Edge
 		}
 	}
 
-	public void setSelected()
+	public void setSelected(boolean b)
 	{
 		if(selected == 0)
 		{
 			selected = 1;
-			if(vertices[0].getSelected() == false)
+			if(vertices[0].isSelected() == false)
 			{
-				vertices[0].setSelected();
+				vertices[0].setSelected(b);
 			}
-			if(vertices[1].getSelected() == false)
+			if(vertices[1].isSelected() == false)
 			{
-				vertices[1].getSelected();
+				vertices[1].setSelected(b);
 			}
 		}
 		else
 		{
 			selected = 0;
-			if(vertices[0].getSelected() == true)
+			if(vertices[0].isSelected() == true)
 			{
-				vertices[0].setSelected();
+				vertices[0].setSelected(b);
 			}
-			if(vertices[1].getSelected() == true)
+			if(vertices[1].isSelected() == true)
 			{
-				vertices[1].setSelected();
+				vertices[1].setSelected(b);
 			}
 		}
 	}
@@ -119,6 +119,8 @@ public class Edge
 	public void setFinalized()
 	{
 		finalized = !finalized;
+		vertices[0].setFinalized(true);
+		vertices[1].setFinalized(true);
 	}
 
 	public Edge copy()

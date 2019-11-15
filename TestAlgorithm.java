@@ -3,8 +3,10 @@ package test;
 import java.io.File;
 import mlc.procedures.Algorithm;
 
-public class TestAlgorithm {
-	public static void main(String[] args) throws Exception {
+public class TestAlgorithm
+{
+	public static void main(String[] args) throws Exception
+	{
 		File source = new File(args[0]);
 		Algorithm a1 = new Algorithm(source);
 		a1.run();

@@ -289,6 +289,27 @@ public class Graph
 				min.add(e);
 			}
 		}
+		int minWeight = min.get(0).getWeight();
+		for(Edge e : edges)
+		{
+			if(e.getWeight() < minWeight)
+			{
+				minWeight = e.getWeight();
+			}
+		}
+		for(Edge e : edges)
+		{
+			if(e.getWeight() > minWeight)
+			{
+				min.remove(e);
+			}
+		}
+
+		/*
+		 * System.out.println("Printing edges of minimum inner outer edge list: ");
+		 * for(Edge e : min) { System.out.println(e.toString()); } System.out.println();
+		 */
+
 		return min;
 	}
 

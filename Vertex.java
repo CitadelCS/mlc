@@ -5,8 +5,8 @@ import java.util.ArrayList;
 public class Vertex
 {
 
-	private ArrayList<Region> regions;
-	private ArrayList<Edge> edges;
+	private ArrayList<Region> regions = new ArrayList<>();
+	private ArrayList<Edge> edges = new ArrayList<>();
 	private boolean selected, root, leaf, finalized;
 	private int degree = 0;
 	private int weight = 0;
@@ -26,17 +26,17 @@ public class Vertex
 		return regions;
 	}
 
-	public boolean getFinalized()
+	public boolean isFinalized()
 	{
 		return finalized;
 	}
 
-	public boolean getLeaf()
+	public boolean isLeaf()
 	{
 		return leaf;
 	}
 
-	public boolean getRoot()
+	public boolean isRoot()
 	{
 		return root;
 	}
@@ -51,7 +51,7 @@ public class Vertex
 		return id;
 	}
 
-	public boolean getSelected()
+	public boolean isSelected()
 	{
 		return selected;
 	}
@@ -86,27 +86,24 @@ public class Vertex
 		weight = w;
 	}
 
-	public void setSelected()
+	public void setSelected(boolean b)
 	{
-		if(selected == false)
-		{
-			selected = true;
-		}
+		selected = b;
 	}
 
-	public void setLeaf()
+	public void setLeaf(boolean b)
 	{
-		leaf = !leaf;
+		leaf = b;
 	}
 
-	public void setRoot()
+	public void setRoot(boolean b)
 	{
-		root = !root;
+		root = b;
 	}
 
-	public void setFinalized()
+	public void setFinalized(boolean b)
 	{
-		finalized = !finalized;
+		finalized = b;
 	}
 
 	public void setEdge(Edge e)

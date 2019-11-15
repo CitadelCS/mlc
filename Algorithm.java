@@ -23,7 +23,7 @@ public class Algorithm
 		{
 			tree[i] = new ArrayList<>();
 		}
-
+		System.out.println("Tree length: " + tree.length + "\n");
 	}
 
 	public Graph getGraph()
@@ -38,6 +38,14 @@ public class Algorithm
 		printVertices();
 		printEdges();
 		procedure2();
+		for(ArrayList<Edge> t : tree)
+		{
+			for(Edge e : t)
+			{
+				System.out.println(e.toString());
+			}
+			System.out.println("Next tree \n \n \n");
+		}
 	}
 
 	/*
@@ -63,7 +71,52 @@ public class Algorithm
 			{
 				edges[j].setFinalized();
 			}
+
 		}
+		for(int i = numOfDepth3Edges + 1; i < edges.length; i++)
+		{
+			e1 = edges[i].getVertices();
+			e1[0].incDegree();
+			e1[1].incDegree();
+		}
+		for(int i = numOfDepth3Edges + 1; i < edges.length; i++)
+		{
+			if(edges[i].getVertices()[0].getDegree() >= 4)
+			{
+				int depth2Edge = 0;
+				for(Edge e : edges[i].getVertices()[0].getEdges())
+				{
+					if(e.getDepth() == 2)
+					{
+						depth2Edge++;
+					}
+				}
+				if(depth2Edge > 1)
+				{
+					edges[i].getVertices()[0].setFinalized(true);
+				}
+			}
+			else if(edges[i].getVertices()[1].getDegree() >= 4)
+			{
+				int depth2Edge = 0;
+				for(Edge e : edges[i].getVertices()[1].getEdges())
+				{
+					if(e.getDepth() == 2)
+					{
+						depth2Edge++;
+					}
+				}
+				if(depth2Edge > 1)
+				{
+					edges[i].getVertices()[1].setFinalized(true);
+				}
+			}
+		}
+
+		/*
+		 * Section to connect critical points via shortest path to form a minimum
+		 * spanning tree of the critical points.
+		 */
 	}
 
 	/*
@@ -80,31 +133,32 @@ public class Algorithm
 		ArrayList<Edge> pMinIOEdges = g.getMinIOEdges();
 
 		// Creates a loop to start the main algorithm with the minimum IO edge.
-		for(int i = 0; i < pMinIOEdges.size(); i++)
+		for(int treeIndex = 0; treeIndex < pMinIOEdges.size(); treeIndex++)
 		{
 
+			System.out.println("This is the " + treeIndex + " iteration. \n");
+
 			// Creates copies of the arrays of vertices, edges, regions, and adjacency list
-			// for
-			// mutual exclusion.
+			// for mutual exclusion.
 			Vertex[] vertices = g.getVertices().clone();
 			Edge[] edges = g.getEdges().clone();
 			Region[] regions = g.getRegions().clone();
 			ArrayList<Edge>[] adjacency = g.getAdjacencyList().clone();
 
 			// Finalizing the minimum IO edge used and adding it to the tree.
-			edges[pMinIOEdges.get(i).getID()].setFinalized();
-			tree[i].add(pMinIOEdges.get(i));
+			edges[pMinIOEdges.get(treeIndex).getID()].setFinalized();
+			tree[treeIndex].add(pMinIOEdges.get(treeIndex));
 
 			/*
 			 * Selecting the vertices, covering the regions, and assigning weights to
 			 * applicable vertex.
 			 */
-			for(Vertex v : tree[i].get(i).getVertices())
+			for(Vertex v : tree[treeIndex].get(0).getVertices())
 			{
-				vertices[v.getID()].setSelected();
+				vertices[v.getID()].setSelected(true);
 				for(Region r : v.getRegions())
 				{
-					regions[r.getID()].setCovered();
+					regions[r.getID()].setCovered(true);
 				}
 
 				/*
@@ -113,12 +167,12 @@ public class Algorithm
 				 */
 				if(v.getDepth() == 2)
 				{
-					v.setWeight(pMinIOEdges.get(i).getWeight());
+					v.setWeight(pMinIOEdges.get(treeIndex).getWeight());
 					for(Region temp : v.getRegions())
 					{
 						if(temp.getDepth() == 3)
 						{
-							cycleResolver(temp, vertices, edges, regions, adjacency, i);
+							cycleResolver(temp, vertices, edges, regions, adjacency, treeIndex);
 						}
 					}
 				}
@@ -129,15 +183,30 @@ public class Algorithm
 			 * getting a "representative" in the array.
 			 */
 			Edge[] minWeight = new Edge[edges.length];
-			updateAdjacency(pMinIOEdges.get(i).getID(), tree[i].size(), minWeight, adjacency);
+			updateAdjacency(pMinIOEdges.get(treeIndex).getID(), treeIndex, minWeight, adjacency);
 
 			/*
 			 * The following will loop through until all the regions have been covered.
 			 */
 
-			boolean regionsCovered = false;
-			while(!regionsCovered)
+			boolean regionsNotCovered = false;
+			for(Region r : regions)
 			{
+				if(r.isCovered() == false && r.getDepth() == 2)
+				{
+					System.out.println("Region checked for coverage and depth: ");
+					System.out.println(r.toString() + "\n");
+					regionsNotCovered = true;
+				}
+			}
+
+			while(regionsNotCovered == true)
+			{
+				System.out.println("Regions update with while loop for while(!regionsCovered).");
+				for(Region r : regions)
+				{
+					System.out.println(r.toString());
+				}
 				tree[0].add(minWeight[0]);
 				Vertex u = vertices[minWeight[0].getVertices()[0].getID()];
 				Vertex v = vertices[minWeight[0].getVertices()[1].getID()];
@@ -149,18 +218,18 @@ public class Algorithm
 				if(u.getWeight() == 0)
 				{
 					u.setWeight(minWeight[0].getWeight() + v.getWeight());
-					u.setSelected();
+					u.setSelected(true);
 					for(Region r : u.getRegions())
 					{
-						r.setCovered();
-						if(r.getDepth() == 3 && r.getResolved() == false)
+						regions[r.getID()].setCovered(true);
+						if(r.getDepth() == 3 && r.isResolved() == false)
 						{
-							cycleResolver(r, vertices, edges, regions, adjacency, i);
+							cycleResolver(r, vertices, edges, regions, adjacency, treeIndex);
 						}
 					}
 
 					// Sets v to -1. Denotes it has been resolved at this point.
-					v.setWeight(u.getWeight() + 1);
+					v.setWeight(-1);
 				}
 
 				/*
@@ -170,21 +239,34 @@ public class Algorithm
 				if(v.getWeight() == 0)
 				{
 					v.setWeight(minWeight[0].getWeight() + u.getWeight());
-					v.setSelected();
+					v.setSelected(true);
 					for(Region r : v.getRegions())
 					{
-						r.setCovered();
-						if(r.getDepth() == 3 && r.getResolved() == false)
+						regions[r.getID()].setCovered(true);
+						if(r.getDepth() == 3 && r.isResolved() == false)
 						{
-							cycleResolver(r, vertices, edges, regions, adjacency, i);
+							cycleResolver(r, vertices, edges, regions, adjacency, treeIndex);
 						}
 					}
 
 					// Sets u to -1. Denotes it has been resolved at this point.
-					u.setWeight(v.getWeight() + 1);
+					u.setWeight(-1);
 				}
+
 				minWeight[0] = null;
+
+				System.out.println("Regions not covered: " + regionsNotCovered);
 			}
+
+			for(Region r : regions)
+			{
+				if(r.isHold() == true)
+				{
+					resolveHold(r, vertices, edges, regions, adjacency, treeIndex);
+				}
+			}
+			System.out.println("This is the end of the " + treeIndex + " iteration. \n \n"
+						+ "************************************" + "\n \n");
 		}
 	}
 
@@ -195,17 +277,17 @@ public class Algorithm
 	 * sorts by weight. If the first condition is not satisfied, a null value is put
 	 * as a filler.
 	 */
-	private void updateAdjacency(int edgeID, int numOfEdges, Edge[] minWeight, ArrayList<Edge>[] adjacency)
+	private void updateAdjacency(int edgeID, int treeIndex, Edge[] minWeight, ArrayList<Edge>[] adjacency)
 	{
 		if(adjacency[edgeID].get(0) != null && adjacency[edgeID].get(0).getDepth() == 3)
 		{
-			minWeight[tree[numOfEdges].size()] = adjacency[edgeID].get(0);
+			minWeight[tree[treeIndex].size()] = adjacency[edgeID].get(0);
 			adjacency[edgeID].remove(0);
 			Arrays.sort(minWeight, (e1, e2) -> e1.getWeight() - e2.getWeight());
 		}
 		else
 		{
-			minWeight[tree[numOfEdges].size()] = null;
+			minWeight[tree[treeIndex].size()] = null;
 		}
 	}
 
@@ -218,7 +300,8 @@ public class Algorithm
 				int treeIndex)
 	{
 		Edge[] path1 = new Edge[r.getEdges().size() / 2];
-		Edge[] path2 = new Edge[(r.getEdges().size() / 2) - path1.length];
+		Edge[] path2 = new Edge[r.getEdges().size() - path1.length];
+		System.out.println("Rectangle being resolved in cycleResolver(): " + r.toString());
 
 		// The indices represent the information as follows: vertex id, vertex weight
 		int[] rootInfo = { -1, -1 };
@@ -276,6 +359,19 @@ public class Algorithm
 			}
 		}
 
+		System.out.println("Path 1 length: " + path1.length);
+		for(Edge e : path1)
+		{
+			System.out.println(e.toString());
+		}
+		System.out.println();
+		System.out.println("Path 2 length: " + path2.length);
+		for(Edge e : path2)
+		{
+			System.out.println(e.toString());
+		}
+		System.out.println("\n");
+
 		if(path1.length == path2.length)
 		{
 
@@ -301,7 +397,98 @@ public class Algorithm
 
 			if(set1.containsAll(set2) && set2.containsAll(set1))
 			{
-				regions[r.getID()].setHold();
+				boolean path1Selected = true;
+				boolean path2Selected = true;
+				for(Edge e : path1)
+				{
+					if(e.getSelected() == 0)
+					{
+						path1Selected = false;
+					}
+				}
+				for(Edge e : path2)
+				{
+					if(e.getSelected() == 0)
+					{
+						path2Selected = false;
+					}
+				}
+				if(path1Selected == true)
+				{
+					regions[r.getID()].setResolved(true);
+					for(Edge e : path1)
+					{
+						tree[treeIndex].add(edges[e.getID()]);
+						Vertex u = vertices[e.getVertices()[0].getID()];
+						Vertex v = vertices[e.getVertices()[1].getID()];
+						if(u.getWeight() == 0)
+						{
+							u.setWeight(v.getWeight() + e.getWeight());
+							u.setSelected(true);
+							for(Region r1 : v.getRegions())
+							{
+								regions[r1.getID()].setCovered(true);
+								if(r1.getDepth() == 3 && r1.isHold() == false && r1.isResolved() == false)
+								{
+									cycleResolver(r1, vertices, edges, regions, adjacency, treeIndex);
+								}
+							}
+						}
+						else if(v.getWeight() == 0)
+						{
+							v.setWeight(u.getWeight() + e.getWeight());
+							v.setSelected(true);
+							for(Region r1 : u.getRegions())
+							{
+								regions[r1.getID()].setCovered(true);
+								if(r1.getDepth() == 3 && r1.isHold() == false && r1.isResolved() == false)
+								{
+									cycleResolver(r1, vertices, edges, regions, adjacency, treeIndex);
+								}
+							}
+						}
+					}
+				}
+				else if(path2Selected == true)
+				{
+					regions[r.getID()].setResolved(true);
+					for(Edge e : path2)
+					{
+						tree[treeIndex].add(edges[e.getID()]);
+						Vertex u = vertices[e.getVertices()[0].getID()];
+						Vertex v = vertices[e.getVertices()[1].getID()];
+						if(u.getWeight() == 0)
+						{
+							u.setWeight(v.getWeight() + e.getWeight());
+							u.setSelected(true);
+							for(Region r1 : v.getRegions())
+							{
+								r1.setCovered(true);
+								if(r1.getDepth() == 3 && r1.isHold() == false && r1.isResolved() == false)
+								{
+									cycleResolver(r1, vertices, edges, regions, adjacency, treeIndex);
+								}
+							}
+						}
+						else if(v.getWeight() == 0)
+						{
+							v.setWeight(u.getWeight() + e.getWeight());
+							v.setSelected(true);
+							for(Region r1 : u.getRegions())
+							{
+								regions[r1.getID()].setCovered(true);
+								if(r1.getDepth() == 3 && r1.isHold() == false && r1.isResolved() == false)
+								{
+									cycleResolver(r1, vertices, edges, regions, adjacency, treeIndex);
+								}
+							}
+						}
+					}
+				}
+				else
+				{
+					regions[r.getID()].setHold(true);
+				}
 			}
 
 			/*
@@ -311,7 +498,7 @@ public class Algorithm
 			 */
 			else if(set1.containsAll(set2))
 			{
-				regions[r.getID()].setResolved();
+				regions[r.getID()].setResolved(true);
 				for(Edge e : path1)
 				{
 					tree[treeIndex].add(edges[e.getID()]);
@@ -320,21 +507,55 @@ public class Algorithm
 					if(u.getWeight() == 0)
 					{
 						u.setWeight(v.getWeight() + e.getWeight());
-						u.setSelected();
+						u.setSelected(true);
 						for(Region r1 : v.getRegions())
 						{
-							r1.setCovered();
-							if(r1.getDepth() == 3 && r1.getHold() == false && r1.getResolved() == false)
+							regions[r1.getID()].setCovered(true);
+							if(r1.getDepth() == 3 && r1.isHold() == false && r1.isResolved() == false)
+							{
+								cycleResolver(r1, vertices, edges, regions, adjacency, treeIndex);
+							}
+						}
+					}
+					else
+					{
+						v.setWeight(u.getWeight() + e.getWeight());
+						v.setSelected(true);
+						for(Region r1 : u.getRegions())
+						{
+							regions[r1.getID()].setCovered(true);
+							if(r1.getDepth() == 3 && r1.isHold() == false && r1.isResolved() == false)
 							{
 								cycleResolver(r1, vertices, edges, regions, adjacency, treeIndex);
 							}
 						}
 					}
 				}
+				for(Edge e : path1)
+				{
+					Vertex u = vertices[e.getVertices()[0].getID()];
+					Vertex v = vertices[e.getVertices()[1].getID()];
+					for(Region r1 : v.getRegions())
+					{
+						regions[r1.getID()].setCovered(true);
+						if(r1.getDepth() == 3 && r1.isHold() == false && r1.isResolved() == false)
+						{
+							cycleResolver(r1, vertices, edges, regions, adjacency, treeIndex);
+						}
+					}
+					for(Region r1 : u.getRegions())
+					{
+						regions[r1.getID()].setCovered(true);
+						if(r1.getDepth() == 3 && r1.isHold() == false && r1.isResolved() == false)
+						{
+							cycleResolver(r1, vertices, edges, regions, adjacency, treeIndex);
+						}
+					}
+				}
 			}
 			else if(set2.containsAll(set1))
 			{
-				regions[r.getID()].setResolved();
+				regions[r.getID()].setResolved(true);
 				for(Edge e : path2)
 				{
 					tree[treeIndex].add(edges[e.getID()]);
@@ -343,11 +564,24 @@ public class Algorithm
 					if(u.getWeight() == 0)
 					{
 						u.setWeight(v.getWeight() + e.getWeight());
-						u.setSelected();
+						u.setSelected(true);
 						for(Region r1 : v.getRegions())
 						{
-							r1.setCovered();
-							if(r1.getDepth() == 3 && r1.getHold() == false && r1.getResolved() == false)
+							regions[r1.getID()].setCovered(true);
+							if(r1.getDepth() == 3 && r1.isHold() == false && r1.isResolved() == false)
+							{
+								cycleResolver(r1, vertices, edges, regions, adjacency, treeIndex);
+							}
+						}
+					}
+					else
+					{
+						v.setWeight(u.getWeight() + e.getWeight());
+						v.setSelected(true);
+						for(Region r1 : u.getRegions())
+						{
+							regions[r1.getID()].setCovered(true);
+							if(r1.getDepth() == 3 && r1.isHold() == false && r1.isResolved() == false)
 							{
 								cycleResolver(r1, vertices, edges, regions, adjacency, treeIndex);
 							}
@@ -357,11 +591,13 @@ public class Algorithm
 			}
 			else
 			{
+				regions[r.getID()].setCovered(true);
 				altCycleResolver(r, vertices, edges, regions, adjacency, treeIndex, path1, path2);
 			}
 		}
 		else
 		{
+			regions[r.getID()].setCovered(true);
 			altCycleResolver(r, vertices, edges, regions, adjacency, treeIndex, path1, path2);
 		}
 	}
@@ -411,30 +647,42 @@ public class Algorithm
 				if(path[i].getVertices()[0].equals(path[(i + 1) % path.length].getVertices()[0])
 							&& path[i].getVertices()[0].getDegree() < 4)
 				{
-					weight2Edges = path[i].getWeight() + path[(i + 1) % path.length].getWeight();
-					indexPair1 = i;
-					indexPair2 = (i + 1) % path.length;
+					if(path[i].getSelected() != 1 && path[i].getVertices()[0].isSelected() == true)
+					{
+						weight2Edges = path[i].getWeight() + path[(i + 1) % path.length].getWeight();
+						indexPair1 = i;
+						indexPair2 = (i + 1) % path.length;
+					}
 				}
 				else if(path[i].getVertices()[0].equals(path[(i + 1) % path.length].getVertices()[1])
 							&& path[i].getVertices()[0].getDegree() < 4)
 				{
-					weight2Edges = path[i].getWeight() + path[(i + 1) % path.length].getWeight();
-					indexPair1 = i;
-					indexPair2 = (i + 1) % path.length;
+					if(path[i].getSelected() != 1 && path[i].getVertices()[0].isSelected() == true)
+					{
+						weight2Edges = path[i].getWeight() + path[(i + 1) % path.length].getWeight();
+						indexPair1 = i;
+						indexPair2 = (i + 1) % path.length;
+					}
 				}
 				else if(path[i].getVertices()[1].equals(path[(i + 1) % path.length].getVertices()[0])
 							&& path[i].getVertices()[1].getDegree() < 4)
 				{
-					weight2Edges = path[i].getWeight() + path[(i + 1) % path.length].getWeight();
-					indexPair1 = i;
-					indexPair2 = (i + 1) % path.length;
+					if(path[i].getSelected() != 1 && path[i].getVertices()[0].isSelected() == true)
+					{
+						weight2Edges = path[i].getWeight() + path[(i + 1) % path.length].getWeight();
+						indexPair1 = i;
+						indexPair2 = (i + 1) % path.length;
+					}
 				}
 				else if(path[i].getVertices()[1].equals(path[(i + 1) % path.length].getVertices()[1])
 							&& path[i].getVertices()[1].getDegree() < 4)
 				{
-					weight2Edges = path[i].getWeight() + path[(i + 1) % path.length].getWeight();
-					indexPair1 = i;
-					indexPair2 = (i + 1) % path.length;
+					if(path[i].getSelected() != 1 && path[i].getVertices()[0].isSelected() == true)
+					{
+						weight2Edges = path[i].getWeight() + path[(i + 1) % path.length].getWeight();
+						indexPair1 = i;
+						indexPair2 = (i + 1) % path.length;
+					}
 				}
 			}
 		}
@@ -449,45 +697,87 @@ public class Algorithm
 		 */
 		if(indexPair1 != 0 && indexPair2 != 0 && weight2Edges >= weight1Edge)
 		{
-			regions[r.getID()].setResolved();
+			regions[r.getID()].setResolved(true);
 			for(Edge e : path)
 			{
-				if(!e.equals(path[indexPair1]) && !e.equals(path[indexPair2])) {
+				if(!e.equals(path[indexPair1]) && !e.equals(path[indexPair2]))
+				{
 					tree[treeIndex].add(edges[e.getID()]);
 					Vertex u = vertices[e.getVertices()[0].getID()];
 					Vertex v = vertices[e.getVertices()[1].getID()];
 					if(u.getWeight() == 0)
 					{
 						u.setWeight(v.getWeight() + e.getWeight());
-						u.setSelected();
+						u.setSelected(true);
 						for(Region r1 : v.getRegions())
 						{
-							r1.setCovered();
-							if(r1.getDepth() == 3 && r1.getHold() == false && r1.getResolved() == false)
-							{
-								cycleResolver(r1, vertices, edges, regions, adjacency, treeIndex);
-							}
+							regions[r1.getID()].setCovered(true);
 						}
+					}
+					else
+					{
+						v.setWeight(u.getWeight() + e.getWeight());
+						v.setSelected(true);
+						for(Region r1 : u.getRegions())
+						{
+							regions[r1.getID()].setCovered(true);
+						}
+					}
+				}
+			}
+			for(Edge e : path)
+			{
+				Vertex u = vertices[e.getVertices()[0].getID()];
+				Vertex v = vertices[e.getVertices()[1].getID()];
+				for(Region r1 : v.getRegions())
+				{
+					regions[r1.getID()].setCovered(true);
+					if(r1.getDepth() == 3 && r1.isHold() == false && r1.isResolved() == false)
+					{
+						cycleResolver(r1, vertices, edges, regions, adjacency, treeIndex);
+					}
+				}
+				for(Region r1 : u.getRegions())
+				{
+					regions[r1.getID()].setCovered(true);
+					if(r1.getDepth() == 3 && r1.isHold() == false && r1.isResolved() == false)
+					{
+						cycleResolver(r1, vertices, edges, regions, adjacency, treeIndex);
 					}
 				}
 			}
 		}
 		else
 		{
-			regions[r.getID()].setResolved();
-			for(Edge e: path) {
-				if(!e.equals(path[indexMax])) {
+			regions[r.getID()].setResolved(true);
+			for(Edge e : path)
+			{
+				if(!e.equals(path[indexMax]))
+				{
 					tree[treeIndex].add(edges[e.getID()]);
 					Vertex u = vertices[e.getVertices()[0].getID()];
 					Vertex v = vertices[e.getVertices()[1].getID()];
 					if(u.getWeight() == 0)
 					{
 						u.setWeight(v.getWeight() + e.getWeight());
-						u.setSelected();
+						u.setSelected(true);
 						for(Region r1 : v.getRegions())
 						{
-							r1.setCovered();
-							if(r1.getDepth() == 3 && r1.getHold() == false && r1.getResolved() == false)
+							r1.setCovered(true);
+							if(r1.getDepth() == 3 && r1.isHold() == false && r1.isResolved() == false)
+							{
+								cycleResolver(r1, vertices, edges, regions, adjacency, treeIndex);
+							}
+						}
+					}
+					else
+					{
+						v.setWeight(u.getWeight() + e.getWeight());
+						v.setSelected(true);
+						for(Region r1 : u.getRegions())
+						{
+							r1.setCovered(true);
+							if(r1.getDepth() == 3 && r1.isHold() == false && r1.isResolved() == false)
 							{
 								cycleResolver(r1, vertices, edges, regions, adjacency, treeIndex);
 							}
@@ -499,20 +789,144 @@ public class Algorithm
 
 	}
 
+	private void alt2CycleResolver(Region r, Vertex[] vertices, Edge[] edges, Region[] regions,
+				ArrayList<Edge>[] adjacency, int treeIndex)
+	{
+		Edge[] path1 = new Edge[r.getEdges().size() / 2];
+		Edge[] path2 = new Edge[(r.getEdges().size() / 2) - path1.length];
+
+		// The indices represent the information as follows: vertex id, vertex weight
+		int[] rootInfo = { -1, -1 };
+		for(Vertex v : r.getVertices())
+		{
+			if(rootInfo[0] == -1 || vertices[v.getID()].getWeight() < rootInfo[1])
+			{
+				rootInfo[0] = v.getID();
+				rootInfo[1] = v.getWeight();
+			}
+		}
+
+		// Initializes the two separate paths first edge.
+		for(int i = 0; i < vertices[rootInfo[0]].getEdges().size(); i++)
+		{
+			if(r.getEdges().contains(vertices[rootInfo[0]].getEdges().get(i)))
+			{
+				if(path1[0] == null)
+				{
+					path1[0] = vertices[rootInfo[0]].getEdges().get(i);
+				}
+				else
+				{
+					path2[0] = vertices[rootInfo[0]].getEdges().get(i);
+				}
+			}
+		}
+
+		// Adds edges to path1 until half of the edges in region are contained in path1
+		for(int i = 1; i < path1.length; i++)
+		{
+			for(int j = 0; j < adjacency[path1[i - 1].getID()].size(); j++)
+			{
+				if(r.getEdges().contains(adjacency[path1[i - 1].getID()].get(j))
+							&& !Arrays.asList(path2).contains(adjacency[path1[i - 1].getID()].get(j)))
+				{
+					// Need to check this for reference passing rather than copy and all other
+					// similar things above.
+					path1[i] = adjacency[path1[i - 1].getID()].get(j);
+				}
+			}
+		}
+
+		/*
+		 * The choice between the paths is arbitrary at this point, so either one can be
+		 * picked. Thus, path1 will be added to the tree.
+		 */
+
+		for(Edge e : path1)
+		{
+			Vertex u = vertices[e.getVertices()[0].getID()];
+			Vertex v = vertices[e.getVertices()[1].getID()];
+			for(Region r1 : v.getRegions())
+			{
+				if(r1.getDepth() == 3 && r1.isHold() == false && r1.isResolved() == false)
+				{
+					cycleResolver(r1, vertices, edges, regions, adjacency, treeIndex);
+				}
+			}
+			for(Region r1 : u.getRegions())
+			{
+				if(r1.getDepth() == 3 && r1.isHold() == false && r1.isResolved() == false)
+				{
+					cycleResolver(r1, vertices, edges, regions, adjacency, treeIndex);
+				}
+			}
+		}
+
+	}
+
+	/*
+	 * private void alt3CycleResolver(Region r, Vertex[] vertices, Edge[] edges,
+	 * Region[] regions, ArrayList<Edge>[] adjacency, int treeIndex) {
+	 * 
+	 * }
+	 */
+
+	/*
+	 * The method first determines if all the regions have been covered that are
+	 * adjacent to the given region. If they are not, then the next step moves onto
+	 * sending the region to a different cycle resolver meant for regions on hold at
+	 * the end.
+	 */
+	private void resolveHold(Region r, Vertex[] vertices, Edge[] edges, Region[] regions, ArrayList<Edge>[] adjacency,
+				int treeIndex)
+	{
+		boolean allRegionsCovered = true;
+		for(Vertex v : r.getVertices())
+		{
+			for(Region r1 : v.getRegions())
+			{
+				if(r1.isCovered() == false)
+				{
+					allRegionsCovered = false;
+				}
+			}
+		}
+		if(allRegionsCovered == false)
+		{
+			r.setResolved(true);
+			r.setHold(false);
+			alt2CycleResolver(r, vertices, edges, regions, adjacency, treeIndex);
+
+			/*
+			 * int edgesNotSelected = 0; for(Edge e : r.getEdges()) { if(e.getSelected() ==
+			 * 0) { edgesNotSelected++; } } if(edgesNotSelected == 2) { r.setResolved();
+			 * r.setHold(); alt2CycleResolver(r, vertices, edges, regions, adjacency,
+			 * treeIndex); } else if(edgesNotSelected != r.getEdges().size()) {
+			 * r.setResolved(); r.setHold(); // alt2CycleResolver(r, vertices, edges,
+			 * regions, adjacency, treeIndex); } else { r.setResolved(); r.setHold();
+			 * alt3CycleResolver(r, vertices, edges, regions, adjacency, treeIndex); }
+			 */
+		}
+	}
+
 	public void printEdges()
 	{
+		System.out.println("List of edges: ");
 		for(Edge e : g.getEdges())
 		{
 			System.out.println(e.toString());
 		}
+		System.out.println();
 	}
 
 	public void printVertices()
 	{
+		System.out.println("List of vertices: ");
 		for(Vertex v : g.getVertices())
 		{
 			System.out.println(v.toString());
 		}
+		System.out.println();
 	}
 
 	public void printAdjacencyList()
