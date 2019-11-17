@@ -113,7 +113,7 @@ public class Vertex
 
 	public String toString()
 	{
-		return("ID: " + id + ", Depth: " + depth + ", Degree:" + degree);
+		return("ID: " + id + ", Depth: " + depth +", Selected: " + selected + ", Degree: " + degree + " Weight: " + weight);
 	}
 
 	@Override

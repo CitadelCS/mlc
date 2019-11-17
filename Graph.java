@@ -3,6 +3,7 @@ package mlc.components;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Scanner;
 
 /*
@@ -199,8 +200,10 @@ public class Graph
 	{
 		for(Region r : regions)
 		{
+			//SSystem.out.println("Region currently viewed to add to vertices: " + r.getID());
 			for(Vertex v : r.getVertices())
 			{
+				//System.out.println("Vertex receiving a region: " + v.getID());
 				v.setRegion(r);
 			}
 		}
@@ -276,6 +279,11 @@ public class Graph
 					adjacency[edges[j].getID()].add(edges[k]);
 				}
 			}
+		}
+		for(int j = 0; j < edges.length; j++)
+		{
+			Collections.sort(adjacency[j], (temp1, temp2) -> temp1.getWeight() - temp2.getWeight());
+			Collections.sort(adjacency[j], (temp1, temp2) -> temp2.getDepth() - temp1.getDepth());
 		}
 	}
 

@@ -2,7 +2,7 @@ package mlc.components;
 
 import java.util.Arrays;
 
-public class Edge
+public class Edge implements Comparable<Edge>
 {
 
 	private Region[] regions = new Region[2];
@@ -116,11 +116,11 @@ public class Edge
 		}
 	}
 
-	public void setFinalized()
+	public void setFinalized(boolean b)
 	{
-		finalized = !finalized;
-		vertices[0].setFinalized(true);
-		vertices[1].setFinalized(true);
+		finalized = b;
+		vertices[0].setFinalized(b);
+		vertices[1].setFinalized(b);
 	}
 
 	public Edge copy()
@@ -131,7 +131,7 @@ public class Edge
 	public String toString()
 	{
 		return("ID:" + id + ", Weight: " + weight + ", Depth: " + depth + ", Selected: " + selected + ", Finalized: "
-					+ finalized);
+					+ finalized + ", Vertex u: " + vertices[0].getID() +  ", Vertex v: " + vertices[1].getID());
 	}
 
 	@Override
@@ -173,4 +173,19 @@ public class Edge
 		return true;
 	}
 
+	public int compareTo(Edge e2)
+	{
+		if(weight == e2.getWeight())
+		{
+			return 0;
+		}
+		else if(weight < e2.getWeight())
+		{
+			return -1;
+		}
+		else
+		{
+			return 1;
+		}
+	}
 }
