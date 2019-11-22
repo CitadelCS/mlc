@@ -10,8 +10,8 @@ public class TestAlgorithm
 {
 	public static void main(String[] args) throws Exception
 	{
-		PrintStream out = new PrintStream(new FileOutputStream("C:\\Users\\Jacob\\eclipse-workspace\\Minimum_Length_Corridor\\src\\test\\log.txt"));
-		System.setOut(out);
+		//PrintStream out = new PrintStream(new FileOutputStream("C:\\Users\\Jacob\\eclipse-workspace\\Minimum_Length_Corridor\\src\\test\\log.txt"));
+		//System.setOut(out);
 		File source = new File(args[0]);
 		Algorithm a1 = new Algorithm(source);
 		a1.run();

@@ -1,8 +1,6 @@
 package mlc.procedures;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -146,7 +144,6 @@ public class Algorithm
 	 * Copies of the various lists are kept to allow for parallel processes to run
 	 * and keep the different objects and variables mutually exclusive.
 	 */
-	@SuppressWarnings("unlikely-arg-type")
 	private void procedure2()
 	{
 		ArrayList<Edge> pMinIOEdges = g.getMinIOEdges();
@@ -162,27 +159,21 @@ public class Algorithm
 			// Creates copies of the arrays of vertices, edges, regions, and adjacency list
 			// for mutual exclusion.
 			Vertex[] vertices = g.getVertices().clone();
-
-			if(DEBUG)
-			{
-				System.out.println("Check to make sure regions were correctly initialized from Algorithm class.\n");
-				for(Vertex v : vertices)
-				{
-					System.out.println("The following are regions for Vertex: " + v.getID());
-					for(Region r : v.getRegions())
-					{
-						System.out.println(r.toString());
-					}
-					System.out.println();
-				}
-				System.out.println();
-			}
-
 			Edge[] edges = g.getEdges().clone();
 			Region[] regions = g.getRegions().clone();
 			ArrayList<Edge>[] adjacency = g.getAdjacencyList().clone();
 
 			Arrays.sort(edges, (e1, e2) -> e1.getID() - e2.getID());
+
+			/*
+			 * if(DEBUG) { System.out.
+			 * println("Check to make sure regions were correctly initialized from Algorithm class.\n"
+			 * ); for(Vertex v : vertices) {
+			 * System.out.println("The following are regions for Vertex: " + v.getID());
+			 * for(Region r : v.getRegions()) { System.out.println(r.toString()); }
+			 * System.out.println(); } System.out.println(); }
+			 */
+
 			/*
 			 * An array of minimum adjacent edges to the edges in the tree, with each edge
 			 * getting a "representative" in the array.
@@ -201,6 +192,7 @@ public class Algorithm
 
 			// Finalizing the minimum IO edge used and adding it to the tree.
 			edges[pMinIOEdges.get(treeIndex).getID()].setFinalized(true);
+			edges[pMinIOEdges.get(treeIndex).getID()].setSelected(true);
 
 			if(DEBUG)
 			{
@@ -214,6 +206,7 @@ public class Algorithm
 			}
 
 			tree[treeIndex].add(pMinIOEdges.get(treeIndex));
+			// updateAdjacency below.
 
 			/*
 			 * Selecting the vertices, covering the regions, and assigning weights to
@@ -285,11 +278,11 @@ public class Algorithm
 			boolean regionsNotCovered = false;
 			for(Region r : regions)
 			{
-				if(r.isCovered() == false && r.getDepth() == 2)
+				if(r.isCovered() == false)
 				{
 					if(DEBUG)
 					{
-						System.out.println("Region checked for coverage and depth:" + r.toString() + "\n");
+						System.out.println("Region checked for coverage and depth:\n" + r.toString() + "\n");
 					}
 
 					regionsNotCovered = true;
@@ -311,6 +304,121 @@ public class Algorithm
 				if(!tree[treeIndex].contains(minWeight[0]))
 				{
 					tree[treeIndex].add(minWeight[0]);
+
+					Vertex u = vertices[minWeight[0].getVertices()[0].getID()];
+					Vertex v = vertices[minWeight[0].getVertices()[1].getID()];
+					updateAdjacency(minWeight[0].getID(), treeIndex, minWeight, adjacency);
+					Edge temp = minWeight[0];
+					minWeight[0] = null;
+					Arrays.sort(minWeight, new Comparator<Edge>()
+					{
+						@Override
+						public int compare(Edge e1, Edge e2)
+						{
+							if(e1 == null && e2 == null)
+							{
+								return 0;
+							}
+							else if(e1 == null)
+							{
+								return 1;
+							}
+							else if(e2 == null)
+							{
+								return -1;
+							}
+							else
+							{
+								return e1.compareTo(e2);
+							}
+						}
+					});
+
+					if(u.getWeight() == 0)
+					{
+						u.setWeight(temp.getWeight() + v.getWeight());
+						u.setSelected(true);
+
+						if(DEBUG)
+						{
+							System.out.println("Vertex with weight of checking for updated weight and being selected:\n"
+										+ u.toString() + "\n");
+						}
+
+						for(Region r : u.getRegions())
+						{
+							regions[r.getID()].setCovered(true);
+
+							if(DEBUG)
+							{
+								System.out.println(
+											"Region of " + u.getID() + " check for being covered:\n" + r.toString() + "\n");
+							}
+
+							if(r.getDepth() == 3 && r.isResolved() == false)
+							{
+								if(DEBUG)
+								{
+									System.out.println("Region:" + r.getID()
+												+ " has depth of 3 and not resolved call to cycleResolver().\n");
+								}
+
+								cycleResolver(r, vertices, edges, regions, adjacency, treeIndex, minWeight);
+							}
+						}
+
+						// Sets v to -1. Denotes it has been resolved at this point.
+
+						if(DEBUG)
+						{
+							System.out.println("Vertex:" + v.getID()
+										+ " weight has been set to -1 in indication of being resolved.");
+						}
+					}
+
+					/*
+					 * Updates the vertex if it has not already been added to tree along with new
+					 * regions covered. Then the regions covered are resolved as applicable.
+					 */
+					else if(v.getWeight() == 0)
+					{
+						v.setWeight(temp.getWeight() + u.getWeight());
+						v.setSelected(true);
+
+						if(DEBUG)
+						{
+							System.out.println("Vertex with weight of 0 checking for updated weight and being selected:\n"
+										+ v.toString() + "\n");
+						}
+
+						for(Region r : v.getRegions())
+						{
+							regions[r.getID()].setCovered(true);
+
+							if(DEBUG)
+							{
+								System.out.println(("Region of " + v.getID() + " check for being covered:\n" + r.toString()
+											+ "\n"));
+							}
+
+							if(r.getDepth() == 3 && r.isResolved() == false)
+							{
+								if(DEBUG)
+								{
+									System.out.println("Region:" + r.getID()
+												+ " has depth of 3 and not resolved call to cycleResolver().\n");
+								}
+
+								cycleResolver(r, vertices, edges, regions, adjacency, treeIndex, minWeight);
+							}
+						}
+
+						if(DEBUG)
+						{
+							System.out.println("Vertex:" + u.getID()
+										+ " weight has been set to -1 in indication of being resolved.");
+						}
+					}
 				}
 
 				if(DEBUG)
@@ -324,110 +432,25 @@ public class Algorithm
 					System.out.println("\n");
 				}
 
-				// Direct pointers to the vertices in vertices[]
-				Vertex u = vertices[minWeight[0].getVertices()[0].getID()];
-				Vertex v = vertices[minWeight[0].getVertices()[1].getID()];
-
-				/*
-				 * Updates the vertex if it has not already been added to tree along with new
-				 * regions covered. Then the regions covered are resolved as applicable.
-				 */
-				if(u.getWeight() == 0)
-				{
-					u.setWeight(minWeight[0].getWeight() + v.getWeight());
-					u.setSelected(true);
-
-					if(DEBUG)
-					{
-						System.out.println("Vertex with weight of 0 checking for updated weight and being selected:\n"
-									+ u.toString() + "\n");
-					}
-
-					for(Region r : u.getRegions())
-					{
-						regions[r.getID()].setCovered(true);
-
-						if(DEBUG)
-						{
-							System.out.println(
-										"Region of " + u.getID() + " check for being covered:\n" + r.toString() + "\n");
-						}
-
-						if(r.getDepth() == 3 && r.isResolved() == false)
-						{
-							if(DEBUG)
-							{
-								System.out.println("Region:" + r.getID()
-											+ " has depth of 3 and not resolved call to cycleResolver().\n");
-							}
-
-							cycleResolver(r, vertices, edges, regions, adjacency, treeIndex, minWeight);
-						}
-					}
-
-					// Sets v to -1. Denotes it has been resolved at this point.
-					v.setWeight(-1);
-
-					if(DEBUG)
-					{
-						System.out.println("Vertex:" + v.getID()
-									+ " weight has been set to -1 in indication of being resolved.");
-					}
-				}
-
-				/*
-				 * Updates the vertex if it has not already been added to tree along with new
-				 * regions covered. Then the regions covered are resolved as applicable.
-				 */
-				if(v.getWeight() == 0)
-				{
-					v.setWeight(minWeight[0].getWeight() + u.getWeight());
-					v.setSelected(true);
-
-					if(DEBUG)
-					{
-						System.out.println("Vertex with weight of 0 checking for updated weight and being selected:\n"
-									+ v.toString() + "\n");
-					}
-
-					for(Region r : v.getRegions())
-					{
-						regions[r.getID()].setCovered(true);
-
-						if(DEBUG)
-						{
-							System.out.println(("Region of " + v.getID() + " check for beingcovered:\n" + r.toString()
-										+ "\n"));
-						}
-
-						if(r.getDepth() == 3 && r.isResolved() == false)
-						{
-							if(DEBUG)
-							{
-								System.out.println("Region:" + r.getID()
-											+ " has depth of 3 and not resolved call to cycleResolver().\n");
-							}
-
-							cycleResolver(r, vertices, edges, regions, adjacency, treeIndex, minWeight);
-						}
-					}
-
-					// Sets u to -1. Denotes it has been resolved at this point.
-					u.setWeight(-1);
-
-					if(DEBUG)
-					{
-						System.out.println("Vertex:" + u.getID()
-									+ " weight has been set to -1 in indication of being resolved.");
-					}
-				}
-
-				minWeight[0] = null;
-
 				if(DEBUG)
 				{
-					System.out.println("Regions not covered: " + regionsNotCovered);
+					System.out.println("Regions check for coverage at end of while loop.");
 				}
+				regionsNotCovered = false;
+				for(Region r : regions)
+				{
+					if(r.isCovered() == false)
+					{
+						if(DEBUG)
+						{
+							System.out.println("Region checked for coverage and depth:\n" + r.toString() + "\n");
+						}
+
+						regionsNotCovered = true;
+					}
+				}
+
+				
 			}
 
 			for(Region r : regions)
@@ -634,6 +657,7 @@ public class Algorithm
 		int[] rootInfo = { -1, -1 };
 		for(Vertex v : r.getVertices())
 		{
+			System.out.println();
 			if(vertices[v.getID()].getWeight() < rootInfo[1] || rootInfo[0] == -1)
 			{
 				if(v.getWeight() != 0)
@@ -644,7 +668,7 @@ public class Algorithm
 					}
 
 					rootInfo[0] = v.getID();
-					rootInfo[1] = v.getWeight();
+					rootInfo[1] = vertices[v.getID()].getWeight();
 				}
 			}
 		}
@@ -677,7 +701,7 @@ public class Algorithm
 			for(int j = 0; j < adjacency[path1[i - 1].getID()].size(); j++)
 			{
 				if(r.getEdges().contains(adjacency[path1[i - 1].getID()].get(j))
-							&& !Arrays.asList(path2).contains(adjacency[path1[i - 1].getID()].get(j)))
+							&& !Arrays.asList(path2).contains(adjacency[path1[i - 1].getID()].get(j)) && !Arrays.asList(path1).contains(adjacency[path1[i - 1].getID()].get(j)))
 				{
 					path1[i] = adjacency[path1[i - 1].getID()].get(j);
 				}
@@ -693,7 +717,7 @@ public class Algorithm
 			for(int j = 0; j < adjacency[path2[i - 1].getID()].size(); j++)
 			{
 				if(r.getEdges().contains(adjacency[path2[i - 1].getID()].get(j))
-							&& !Arrays.asList(path1).contains(adjacency[path2[i - 1].getID()].get(j)))
+							&& !Arrays.asList(path1).contains(adjacency[path2[i - 1].getID()].get(j)) && !Arrays.asList(path2).contains(adjacency[path2[i - 1].getID()].get(j)))
 				{
 					path2[i] = adjacency[path2[i - 1].getID()].get(j);
 				}
@@ -784,11 +808,11 @@ public class Algorithm
 										+ " and updateAdjacency is being called.\n");
 						}
 						edges[e.getID()].setSelected(true);
-						if(!Arrays.asList(tree[treeIndex]).contains(edges[e.getID()]))
+						if(!tree[treeIndex].contains(edges[e.getID()]))
 						{
 							tree[treeIndex].add(edges[e.getID()]);
 						}
-						
+
 						updateAdjacency(e.getID(), treeIndex, minWeight, adjacency);
 						Vertex u = vertices[e.getVertices()[0].getID()];
 						Vertex v = vertices[e.getVertices()[1].getID()];
@@ -884,7 +908,7 @@ public class Algorithm
 						}
 
 						edges[e.getID()].setSelected(true);
-						if(!Arrays.asList(tree[treeIndex]).contains(edges[e.getID()]))
+						if(!tree[treeIndex].contains(edges[e.getID()]))
 						{
 							tree[treeIndex].add(edges[e.getID()]);
 						}
@@ -991,7 +1015,7 @@ public class Algorithm
 				for(Edge e : path1)
 				{
 					edges[e.getID()].setSelected(true);
-					if(!Arrays.asList(tree[treeIndex]).contains(edges[e.getID()]))
+					if(!tree[treeIndex].contains(edges[e.getID()]))
 					{
 						tree[treeIndex].add(edges[e.getID()]);
 					}
@@ -1081,7 +1105,7 @@ public class Algorithm
 				for(Edge e : path2)
 				{
 					edges[e.getID()].setSelected(true);
-					if(!Arrays.asList(tree[treeIndex]).contains(e))
+					if(!tree[treeIndex].contains(e))
 					{
 						tree[treeIndex].add(edges[e.getID()]);
 					}
@@ -1463,17 +1487,33 @@ public class Algorithm
 					{
 						tree[treeIndex].add(edges[e.getID()]);
 					}
+					updateAdjacency(e.getID(), treeIndex, minWeight, adjacency);
+
 					Vertex u = vertices[e.getVertices()[0].getID()];
 					Vertex v = vertices[e.getVertices()[1].getID()];
 					if(u.getWeight() == 0)
 					{
 						u.setWeight(v.getWeight() + e.getWeight());
 						u.setSelected(true);
+
+						if(DEBUG)
+						{
+							System.out.println("The following vertex should have a weight and be selected:\n"
+										+ u.toString() + "\n");
+						}
+
 					}
 					else
 					{
 						v.setWeight(u.getWeight() + e.getWeight());
 						v.setSelected(true);
+
+						if(DEBUG)
+						{
+							System.out.println("The following vertex should have a weight and be selected:\n"
+										+ v.toString() + "\n");
+						}
+
 					}
 				}
 			}
@@ -1546,7 +1586,7 @@ public class Algorithm
 			if(rootInfo[0] == -1 || vertices[v.getID()].getWeight() < rootInfo[1])
 			{
 				rootInfo[0] = v.getID();
-				rootInfo[1] = v.getWeight();
+				rootInfo[1] = vertices[v.getID()].getWeight();
 			}
 		}
 
@@ -1578,7 +1618,7 @@ public class Algorithm
 			for(int j = 0; j < adjacency[path1[i - 1].getID()].size(); j++)
 			{
 				if(r.getEdges().contains(adjacency[path1[i - 1].getID()].get(j))
-							&& !Arrays.asList(path2).contains(adjacency[path1[i - 1].getID()].get(j)))
+							&& !Arrays.asList(path2).contains(adjacency[path1[i - 1].getID()].get(j)) && !Arrays.asList(path1).contains(adjacency[path1[i - 1].getID()].get(j)))
 				{
 					path1[i] = adjacency[path1[i - 1].getID()].get(j);
 				}

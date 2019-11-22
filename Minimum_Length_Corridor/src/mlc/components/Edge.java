@@ -106,29 +106,13 @@ public class Edge implements Comparable<Edge>
 
 	public void setSelected(boolean b)
 	{
-		if(selected == 0)
+		if(b)
 		{
 			selected = 1;
-			if(vertices[0].isSelected() == false)
-			{
-				vertices[0].setSelected(b);
-			}
-			if(vertices[1].isSelected() == false)
-			{
-				vertices[1].setSelected(b);
-			}
 		}
 		else
 		{
 			selected = 0;
-			if(vertices[0].isSelected() == true)
-			{
-				vertices[0].setSelected(b);
-			}
-			if(vertices[1].isSelected() == true)
-			{
-				vertices[1].setSelected(b);
-			}
 		}
 	}
 
